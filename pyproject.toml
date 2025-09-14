@@ -1,0 +1,8 @@
+[tool.ruff]
+# Configuration minimale pour Ruff
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+# Ignorer E402 (module level import not at top of file) dans les tests
+per-file-ignores = { "tests/*.py" = ["E402"] }

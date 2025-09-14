@@ -1,0 +1,18 @@
+[run]
+source = app
+omit = 
+    */venv/*
+    */env/*
+    */__pycache__/*
+    */tests/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__.:
+fail_under = 80
+
+[html]
+directory = coverage-html
+title = Tests Coverage Report

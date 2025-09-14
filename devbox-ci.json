@@ -1,0 +1,30 @@
+{
+  "packages": [
+    "kind@0.29.0",
+    "kubectl@1.33.3",
+    "kubernetes-helm@3.18.4",
+    "go-task@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "chmod +x ./scripts/run-units-tests.sh && chmod +x ./scripts/run-regression-tests.sh && chmod +x ./scripts/run-smoke-test.sh && chmod +x ./scripts/run-integration-tests.sh"
+    ],
+    "scripts": {
+      "units-tests": [
+        "./scripts/run-units-tests.sh"
+      ],
+      "regression-tests": [
+        "./scripts/run-regression-tests.sh"
+      ],
+      "smoke-test": [
+        "./scripts/run-smoke-test.sh"
+      ],
+      "minimal-deployment": [
+        "task cluster-create"
+      ],
+      "integration-tests": [
+        "./scripts/run-integration-tests.sh"
+      ]
+    }
+  }
+}

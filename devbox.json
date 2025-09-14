@@ -1,0 +1,10 @@
+{
+  "packages": [
+    "gh@2.76.1",
+    "act@0.2.79"
+  ],
+  "shell": {
+    "init_hook": [],
+    "scripts":   {}
+  }
+}

@@ -1,0 +1,34 @@
+version: "3"
+
+tasks:
+  cluster-create:
+    desc: Crée un kind cluster et déploie l'application
+    vars:
+      TIMEOUT: 300s
+    cmds:
+      - task: cluster-create-kind
+      - task: wait-cluster-ready
+      - task: deploy-app
+      - echo "Déploiement OK!"
+
+  cluster-create-kind:
+    desc: Creates a kind cluster
+    cmds:
+      - cmd: kind create cluster
+    internal: true
+
+  wait-cluster-ready:
+    desc: Attend que le cluster soit prêt
+    cmds:
+      - kubectl wait --for=condition=Ready nodes --all --timeout=300s
+      - kubectl wait --for=condition=Ready pods -n kube-system -l k8s-app=kube-dns --timeout=300s
+      - sleep 5
+    internal: true
+
+  deploy-app:
+    desc: Déploie l'application dans le cluster
+    cmds:
+      - kubectl create namespace demo --dry-run=client -o yaml | kubectl apply -f - --validate=false
+      - kubectl --namespace demo create secret generic todolist --from-literal $"url=($DATABASE_URL)"
+      - kubectl --namespace demo apply --filename kubernetes/app.yaml
+    internal: true

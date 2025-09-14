@@ -1,0 +1,116 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+
+permissions: # Pour le GITHUB_TOKEN par défaut
+  contents: read # Checkout du code
+  packages: read # Authentification avec GHCR
+  actions: read # Utilisation des actions de cache/artefacts
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # - name: Set Short SHA
+      #   run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Ruff Lint
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check --output-format junit --output-file lint-report.xml"
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          project-path: devbox-ci.json
+
+      - name: Run units tests with coverage and HTML report
+        run: devbox run --config devbox-ci.json units-tests
+
+      - name: Run regression tests
+        run: devbox run --config devbox-ci.json regression-tests
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3 # Permet le build multi-platform images
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3 # Permet le build multi-platform images
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} # user GitHub
+          password: ${{ secrets.PRIVATE_REGISTRY_PASSWORD }} # PAT Token with repo + package permissions
+
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v6
+        with:
+          load: true # Pour charger l'image localement
+          tags: ghcr.io/${{ github.actor }}/todolist:latest # SHORT_SHA
+
+      - name: Smoke Test
+        run: devbox run --config devbox-ci.json smoke-test
+        env:
+          IMAGE: ghcr.io/${{ github.actor }}/todolist:latest # SHORT_SHA
+          NAME: todolist-smoke-${{ github.run_id }} # Use run_id instead of event.number for push events
+
+      - name: Multi-platform build and push the image
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.actor }}/todolist:latest # SHORT_SHA
+
+      - name: Create Neon branch
+        uses: neondatabase/create-branch-action@v6
+        id: create-database
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: portfolio-ultime/${{ github.run_id }} # Use run_id instead of event.number for push events
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Minimal deployment
+        run: devbox run --config devbox-ci.json minimal-deployment
+        env:
+          DATABASE_URL: ${{ steps.create-database.outputs.db_url }}
+
+      - name: Run integration tests
+        run: devbox run --config devbox-ci.json integration-tests
+        env:
+          DATABASE_URL: ${{ steps.create-database.outputs.db_url }}
+
+      - name: Upload all reports and artifacts
+        uses: actions/upload-artifact@v4
+        if: always() # Upload artifacts even if tests fail
+        with:
+          name: ci-reports-${{ github.run_id }}
+          path: |
+            lint-report.xml
+            units-test-report.html
+            regression-test-report.html
+            coverage-html/
+            integration-test-report.html
+          retention-days: 7
+
+      - name: Delete Neon branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: portfolio-ultime/${{ github.run_id }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      # - name: update manifests
+      # - name: commit-changes # git commit -m "Release ${{ env.TAG }} [skip ci]
+      # - name: push-changes # github-push-action@master

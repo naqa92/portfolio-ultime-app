@@ -61,5 +61,10 @@ ingress:
   enabled: true
   className: nginx
   host: todolist.127.0.0.1.nip.io
-  annotations: {} # EKS: alb.ingress.kubernetes.io/scheme: internet-facing
-
+  annotations: {}
+  # alb.ingress.kubernetes.io/scheme: internet-facing
+  # cert-manager.io/cluster-issuer: "letsencrypt"
+  tls: []
+  # - hosts:
+  #     - myapp.example.com
+  #   secretName: letsencrypt-myapp

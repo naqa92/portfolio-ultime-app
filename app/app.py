@@ -49,11 +49,10 @@ app.logger.info("Using database: %s", app.config["SQLALCHEMY_DATABASE_URI"])
 
 
 # Define routes
-@app.route("/health", methods=["GET"])
+@app.route("/health", methods=["GET"]) # Endpoint pour les Probes
 def health() -> Response:
-    """Health check endpoint."""
-    return jsonify(status="ok"), 200
-
+    """Liveness and Readiness probe endpoints."""
+    return jsonify({"status": "healthy"}), 200
 
 @app.route("/", methods=["GET"])
 def home() -> str:

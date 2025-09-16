@@ -112,7 +112,7 @@ L'accès à l'application GitHub est accordé exclusivement au dépôt "portfoli
 
 Complémentaires aux tests unitaires existants
 
-- ✅ Format des endpoints critiques (/health réponse JSON)
+- ✅ Format des endpoints critiques : JSON
 - ✅ Compatibilité schéma base de données (Vérification que la structure reste cohérente)
 - ✅ Workflow end-to-end (Test rapide de l'intégration complète)
 - ✅ Gestion des cas limites (Gestion des titres vides/espaces)
@@ -207,6 +207,28 @@ Application accessible sur : todolist.127.0.0.1.nip.io
 
 > _nip.io fonctionne en redirigeant 127.0.0.1.nip.io vers 127.0.0.1_
 
+### Chart Helm todolist
+
+#### Structure de la chart todolist
+
+```
+charts/todolist/
+├── Chart.yaml
+├── values.yaml
+└── templates/
+    ├── deployment.yaml
+    ├── service.yaml
+    └── ingress.yaml
+```
+
+#### Utilisation
+
+```bash
+helm template ./charts/todolist # Render
+helm install todolist ./charts/todolist -n demo --create-namespace # Installation
+helm upgrade todolist ./charts/todolist -n demo # Mise à jour
+```
+
 ## 🚀 Démarrage Rapide
 
 ### Prérequis
@@ -258,9 +280,14 @@ pytest units.py --cov=../app --cov-report=html
 
 ### Healthcheck
 
-- **Endpoint** : `/health`
-- **Réponse** : `{"status": "ok"}`
+- **Endpoints** : `/health`
+- **Réponse** : JSON
 - **Utilisation** : Docker, Kubernetes, monitoring
+
+| Paramètre             | Liveness Probe (Vérification de santé)                                                            | Readiness Probe (Vérification de disponibilité)                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `initialDelaySeconds` | Attend 30 secondes avant de commencer à vérifier si le conteneur est en vie.                      | Attend 30 secondes avant de commencer à vérifier si le conteneur est prêt à recevoir du trafic.   |
+| `timeoutSeconds`      | La vérification doit se terminer en 5 secondes maximum, sinon elle est considérée comme un échec. | La vérification doit se terminer en 5 secondes maximum, sinon elle est considérée comme un échec. |
 
 ## 🛠️ Outils de Développement
 

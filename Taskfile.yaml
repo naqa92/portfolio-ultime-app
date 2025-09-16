@@ -44,5 +44,5 @@ tasks:
     cmds:
       - kubectl create namespace demo --dry-run=client -o yaml | kubectl apply -f - --validate=false
       - kubectl -n demo create secret generic todolist --from-literal $"url=($DATABASE_URL)"
-      - kubectl -n demo apply --filename kubernetes/app.yaml
+      - helm install todolist ./charts/todolist -n demo
     internal: true

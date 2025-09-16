@@ -1,0 +1,50 @@
+replicaCount: 2
+
+image:
+  repository: naqa92/todolist
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+
+env: {}
+
+env_secrets:
+  - name: DATABASE_URL
+    secretName: todolist
+    secretKey: url
+
+port: 5000
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 5000
+  targetPort: 5000
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+
+startupProbe: {}
+
+ingress:
+  enabled: true
+  className: nginx
+  host: todolist.127.0.0.1.nip.io

@@ -5,7 +5,7 @@ replicaCount: 2
 terminationGracePeriodSeconds: 120 # synchronisée avec deregistration_delay (ALB)
 
 image:
-  repository: naqa92/todolist
+  repository: ghcr.io/naqa92/todolist
   tag: "latest"
   pullPolicy: IfNotPresent
 
@@ -21,8 +21,8 @@ env: {}
 
 env_secrets:
   - name: DATABASE_URL
-    secretName: todolist
-    secretKey: url
+    secretName: "db-app"
+    secretKey: "uri"
 
 port: 5000
 
@@ -61,5 +61,5 @@ ingress:
   enabled: true
   className: nginx
   host: todolist.127.0.0.1.nip.io
-  annotations: {} # alb.ingress.kubernetes.io/scheme: internet-facing
+  annotations: {} # EKS: alb.ingress.kubernetes.io/scheme: internet-facing
 

@@ -61,3 +61,5 @@ ingress:
   enabled: true
   className: nginx
   host: todolist.127.0.0.1.nip.io
+  annotations: {} # alb.ingress.kubernetes.io/scheme: internet-facing
+

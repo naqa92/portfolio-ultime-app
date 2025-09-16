@@ -54,3 +54,23 @@ spec:
   selector:
     app.kubernetes.io/name: todolist
   type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/name: todolist
+  name: todolist
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: todolist.127.0.0.1.nip.io
+      http:
+        paths:
+          - backend:
+              service:
+                name: todolist
+                port:
+                  number: 5000
+            path: /
+            pathType: ImplementationSpecific

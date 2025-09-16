@@ -189,13 +189,6 @@ NEON_PROJECT_ID       # ID du projet Neon
 
 ## ☸️ Déploiement Kubernetes
 
-### Manifestes (`app.yaml`)
-
-- **Deployment** : 2 répliques avec healthchecks
-- **Service** : Exposition ClusterIP
-- **Secret** : Configuration DATABASE_URL
-- **Resources** : Limites CPU/Mémoire configurées
-
 ### Déploiement Local avec Kind
 
 ```bash
@@ -205,6 +198,14 @@ task cluster-create
 # Avec base de données externe
 DATABASE_URL="postgresql://..." task cluster-create
 ```
+
+- kind.yaml : exposition des ports 80 et 443
+- ingress-nginx : activation du hostPort pour les ports 80 et 443
+- déploiement de l'app : namespace, secret, deployment, service et ingress
+
+Application accessible sur : todolist.127.0.0.1.nip.io
+
+> _nip.io fonctionne en redirigeant 127.0.0.1.nip.io vers 127.0.0.1_
 
 ## 🚀 Démarrage Rapide
 
@@ -280,7 +281,6 @@ Configuration dans `devbox-ci.json` pour :
 
 ## Roadmap
 
-- Ajouter Ingress controller dans deployment minimal
 - Branch Protection : Blocage des push directs sur main (Review MR nécessaire)
 
 ```yaml

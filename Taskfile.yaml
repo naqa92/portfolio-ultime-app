@@ -8,13 +8,14 @@ tasks:
     cmds:
       - task: cluster-create-kind
       - task: wait-cluster-ready
+      - task: install-ingress-nginx
       - task: deploy-app
       - echo "Déploiement OK!"
 
   cluster-create-kind:
     desc: Creates a kind cluster
     cmds:
-      - cmd: kind create cluster
+      - cmd: kind create cluster --config kind.yaml
     internal: true
 
   wait-cluster-ready:
@@ -25,10 +26,23 @@ tasks:
       - sleep 5
     internal: true
 
+  install-ingress-nginx:
+    desc: Installe le contrôleur d'ingress NGINX
+    cmds:
+      - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+      - helm repo update
+      - |
+        helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace \
+          --set controller.hostPort.enabled=true \
+          --set controller.hostPort.ports.http=80 \
+          --set controller.hostPort.ports.https=443
+      - kubectl -n ingress-nginx wait --for=condition=Available deployment/ingress-nginx-controller
+    internal: true
+
   deploy-app:
     desc: Déploie l'application dans le cluster
     cmds:
       - kubectl create namespace demo --dry-run=client -o yaml | kubectl apply -f - --validate=false
-      - kubectl --namespace demo create secret generic todolist --from-literal $"url=($DATABASE_URL)"
-      - kubectl --namespace demo apply --filename kubernetes/app.yaml
+      - kubectl -n demo create secret generic todolist --from-literal $"url=($DATABASE_URL)"
+      - kubectl -n demo apply --filename kubernetes/app.yaml
     internal: true

@@ -38,20 +38,21 @@ Cette application TodoList permet de :
 
 ```
 portfolio-ultime/
-├── app/                      # Code source de l'application
-│   ├── app.py               # Application Flask principale
-│   ├── templates/           # Templates HTML
-│   └── requirements.txt     # Dépendances Python
-├── tests/                   # Suite de tests complète
-│   ├── units.py            # Tests unitaires
-│   ├── integration.py      # Tests d'intégration DB
-│   ├── regression.py       # Tests de non-régression
-│   └── conftest.py         # Configuration pytest avec fixtures
-├── scripts/                 # Scripts de tests et CI
-├── kubernetes/              # Manifestes Kubernetes
-├── Dockerfile              # Build multi-stage
-├── .github/workflows/      # Pipeline GitHub Actions
-└── Taskfile.yaml          # Automatisation des tâches
+├── app/                      # Code source de l'application Flask
+│   ├── app.py                # Point d'entrée principal
+│   ├── templates/            # Fichiers HTML
+│   └── requirements.txt      # Dépendances Python
+├── tests/                    # Suite de tests automatisés
+│   ├── units.py              # Tests unitaires
+│   ├── integration.py        # Tests d'intégration (PostgreSQL)
+│   ├── regression.py         # Tests de non-régression
+│   └── conftest.py           # Fixtures et config pytest
+├── scripts/                  # Scripts pour CI et tests
+├── charts/                   # Chart Helm pour déploiement Kubernetes (déploiement, service, ingress)
+├── Dockerfile                # Build multi-stage Docker
+├── .github/workflows/        # Workflows GitHub Actions CI/CD
+├── Taskfile.yaml             # Automatisation via Task
+└── devbox-ci.json            # Configuration Devbox pour CI
 ```
 
 ---
@@ -284,9 +285,9 @@ pytest units.py --cov=../app --cov-report=html
 - **Réponse** : JSON
 - **Utilisation** : Docker, Kubernetes, monitoring
 
-| Paramètre             | Liveness Probe (Vérification de santé)                                                            | Readiness Probe (Vérification de disponibilité)                                                   |
+| Paramètre             | Readiness Probe (Vérification de disponibilité)                                                   | Liveness Probe (Vérification de santé)                                                            |
 | --------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `initialDelaySeconds` | Attend 30 secondes avant de commencer à vérifier si le conteneur est en vie.                      | Attend 30 secondes avant de commencer à vérifier si le conteneur est prêt à recevoir du trafic.   |
+| `initialDelaySeconds` | Attend 5 secondes avant de commencer à vérifier si le conteneur est prêt à recevoir du trafic.    | Attend 30 secondes avant de commencer à vérifier si le conteneur est en vie.                      |
 | `timeoutSeconds`      | La vérification doit se terminer en 5 secondes maximum, sinon elle est considérée comme un échec. | La vérification doit se terminer en 5 secondes maximum, sinon elle est considérée comme un échec. |
 
 ## 🛠️ Outils de Développement

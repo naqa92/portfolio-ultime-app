@@ -17,6 +17,9 @@ spec:
       labels:
         app.kubernetes.io/name: {{ $root.Release.Name }}
     spec:
+{{- if $root.Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $root.Values.terminationGracePeriodSeconds }}
+{{- end }}
       containers:
         - name: {{ $root.Release.Name }}
           image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
@@ -50,6 +53,10 @@ spec:
 {{- end }}
 {{- with .Values.startupProbe }}
           startupProbe:
+{{ toYaml . | nindent 12 }}
+{{- end }}
+{{- with .Values.lifecycle }}
+          lifecycle:
 {{ toYaml . | nindent 12 }}
 {{- end }}
 {{- with .Values.resources }}

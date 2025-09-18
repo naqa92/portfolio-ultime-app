@@ -17,7 +17,7 @@ def test_health_endpoint_format_regression(client: FlaskClient) -> None:
     assert response.status_code == 200
     assert response.is_json
     assert "status" in response.json
-    assert response.json["status"] == "ok"
+    assert response.json["status"] == "healthy"
     logger.info("✓ Health endpoint format regression test passed")
 
 

@@ -1,4 +1,10 @@
+[build-system]
+# Permet de lire la version dans la section project
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
+# Configuration du projet
 name = "todolist"
 version = "0.1.0"
 description = "A simple todo list application"

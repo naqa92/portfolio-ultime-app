@@ -68,12 +68,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      # - name: Set Short SHA
-      #   run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_ENV
-
       - name: Ruff Lint
-        uses: astral-sh/ruff-action@v3.5.1
+        uses: astral-sh/ruff-action@v3
         with:
+          version: "latest"
           args: "check --output-format junit --output-file lint-report.xml"
 
       - name: Setup python
@@ -232,19 +230,26 @@ jobs:
           # Add all version-related changes
           git add pyproject.toml charts/todolist/Chart.yaml charts/todolist/values.yaml
 
-          git commit -m "chore: coordinated release v$VERSION
+          # Vérifier s'il y a des changements à commiter
+          if git diff --staged --quiet; then
+            echo "No version changes to commit (files already up to date)"
+          else
+            git commit -m "chore: coordinated release v$VERSION
 
           - python package: v$VERSION
           - docker image: ghcr.io/${{ github.actor }}/todolist:$VERSION  
           - helm chart: oci://ghcr.io/${{ github.actor }}/charts/todolist:$VERSION
 
           [skip ci]"
+            
+            # Push changes
+            git push origin main
+          fi
 
           # Create release tag
           git tag -a "v$VERSION" -m "Release v$VERSION - coordinated python, docker, and helm chart release"
 
-          # Push changes and tag
-          git push origin main
+          # Push tag
           git push origin "v$VERSION"
 
           echo "Released coordinated version: $VERSION"

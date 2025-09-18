@@ -5,13 +5,64 @@ on:
     branches: [main]
 
 permissions: # Pour le GITHUB_TOKEN par défaut
-  contents: read # Checkout du code
+  contents: write # Création de tags/releases
   packages: read # Authentification avec GHCR
   actions: read # Utilisation des actions de cache/artefacts
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    outputs:
+      new-version: ${{ steps.version-check.outputs.new-version }}
+      version-changed: ${{ steps.version-check.outputs.version-changed }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull latest changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git pull origin main
+
+      - name: Calculate next version
+        id: version-check
+        run: |
+          # Récupérer la version actuelle depuis pyproject.toml
+          CURRENT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Vérifier si cette version existe déjà comme tag
+          if git tag -l "v$CURRENT_VERSION" | grep -q "v$CURRENT_VERSION"; then
+            echo "Tag v$CURRENT_VERSION already exists, incrementing patch version..."
+            
+            # Parser la version et incrémenter le patch
+            MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+            MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+            PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
+            
+            # Incrémenter le patch
+            NEW_PATCH=$((PATCH + 1))
+            NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+            
+            echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "Version will be incremented from $CURRENT_VERSION to $NEW_VERSION"
+            echo "version-changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "new-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "Version will be published: $CURRENT_VERSION"
+            echo "version-changed=true" >> $GITHUB_OUTPUT
+          fi
+
   ci:
     runs-on: ubuntu-latest
+    needs: [version]
+    if: needs.version.result == 'success'
 
     steps:
       - name: Checkout code
@@ -58,12 +109,14 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           load: true # Pour charger l'image localement
-          tags: ghcr.io/${{ github.actor }}/todolist:latest # SHORT_SHA
+          tags: |
+            ghcr.io/${{ github.actor }}/todolist:latest
+            ghcr.io/${{ github.actor }}/todolist:${{ needs.version.outputs.new-version || 'latest' }}
 
       - name: Smoke Test
         run: devbox run --config devbox-ci.json smoke-test
         env:
-          IMAGE: ghcr.io/${{ github.actor }}/todolist:latest # SHORT_SHA
+          IMAGE: ghcr.io/${{ github.actor }}/todolist:${{ needs.version.outputs.new-version || 'latest' }}
           NAME: todolist-smoke-${{ github.run_id }} # Use run_id instead of event.number for push events
 
       - name: Multi-platform build and push the image
@@ -71,7 +124,9 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ github.actor }}/todolist:latest # SHORT_SHA
+          tags: |
+            ghcr.io/${{ github.actor }}/todolist:latest
+            ghcr.io/${{ github.actor }}/todolist:${{ needs.version.outputs.new-version || 'latest' }}
 
       - name: Create Neon branch
         uses: neondatabase/create-branch-action@v6
@@ -110,6 +165,114 @@ jobs:
           project_id: ${{ vars.NEON_PROJECT_ID }}
           branch: portfolio-ultime/${{ github.run_id }}
           api_key: ${{ secrets.NEON_API_KEY }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [version, ci]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.version.outputs.version-changed == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.14.0"
+
+      - name: Update versions in project files
+        run: |
+          VERSION=${{ needs.version.outputs.new-version }}
+
+          # Mettre à jour pyproject.toml
+          sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
+
+          # Mettre à jour Chart.yaml
+          sed -i "s/^version: .*/version: $VERSION/" charts/todolist/Chart.yaml
+          sed -i "s/^appVersion: .*/appVersion: $VERSION/" charts/todolist/Chart.yaml
+
+          # Mettre à jour values.yaml
+          sed -i "s/tag: \".*\"/tag: \"$VERSION\"/" charts/todolist/values.yaml
+
+          echo "Updated all files to version: $VERSION"
+
+      - name: Log in to GitHub Container Registry for Helm
+        run: |
+          helm registry login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
+        env:
+          HELM_EXPERIMENTAL_OCI: 1
+
+      - name: Package and push Helm chart
+        run: |
+          VERSION=${{ needs.version.outputs.new-version }}
+
+          # Package the chart with coordinated version
+          helm package charts/todolist/ --version $VERSION --app-version $VERSION
+
+          # Push versioned chart to GHCR as OCI artifact
+          helm push todolist-$VERSION.tgz oci://ghcr.io/${{ github.actor }}/charts
+
+          echo "Published Helm chart: oci://ghcr.io/${{ github.actor }}/charts/todolist:$VERSION"
+
+      - name: Commit all coordinated changes and create Git tag
+        run: |
+          VERSION=${{ needs.version.outputs.new-version }}
+
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Add all version-related changes
+          git add pyproject.toml charts/todolist/Chart.yaml charts/todolist/values.yaml
+
+          git commit -m "chore: coordinated release v$VERSION
+
+          - python package: v$VERSION
+          - docker image: ghcr.io/${{ github.actor }}/todolist:$VERSION  
+          - helm chart: oci://ghcr.io/${{ github.actor }}/charts/todolist:$VERSION
+
+          [skip ci]"
+
+          # Create release tag
+          git tag -a "v$VERSION" -m "Release v$VERSION - coordinated python, docker, and helm chart release"
+
+          # Push changes and tag
+          git push origin main
+          git push origin "v$VERSION"
+
+          echo "Released coordinated version: $VERSION"
+
+      - name: Generate release notes
+        run: |
+          VERSION=${{ needs.version.outputs.new-version }}
+          echo "# Release v$VERSION" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Coordinated Release Artifacts" >> RELEASE_NOTES.md
+          echo "- **Python package**: \`todolist@$VERSION\`" >> RELEASE_NOTES.md
+          echo "- **Docker image**: \`ghcr.io/${{ github.actor }}/todolist:$VERSION\` (also available as \`latest\`)" >> RELEASE_NOTES.md
+          echo "- **Helm chart**: \`oci://ghcr.io/${{ github.actor }}/charts/todolist:$VERSION\`" >> RELEASE_NOTES.md
+
+          echo "" >> RELEASE_NOTES.md
+          echo "## Changes" >> RELEASE_NOTES.md
+          git log --oneline $(git describe --tags --abbrev=0 HEAD~1)..HEAD >> RELEASE_NOTES.md 2>/dev/null || echo "Initial release" >> RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.version.outputs.new-version }}
+          release_name: Release v${{ needs.version.outputs.new-version }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
 
       # - name: update manifests
       # - name: commit-changes # git commit -m "Release ${{ env.TAG }} [skip ci]

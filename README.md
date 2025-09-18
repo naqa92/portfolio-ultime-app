@@ -188,6 +188,212 @@ PRIVATE_REGISTRY_PASSWORD  # Token GitHub pour GHCR
 NEON_PROJECT_ID       # ID du projet Neon
 ```
 
+## 🏷️ Système de Versioning et Releases
+
+### Architecture du Versioning
+
+Le projet utilise un système de versioning automatisé coordonné qui synchronise :
+
+- **Python package** (`pyproject.toml`)
+- **Image Docker** (GHCR)
+- **Chart Helm** (GHCR OCI)
+- **Tags Git** et **GitHub Releases**
+
+### Workflow de Release Automatique
+
+```mermaid
+graph LR
+    A[Push main] --> B[Job version]
+    B --> C[Job CI + tests]
+    C --> D[Job release]
+    D --> E[GitHub Release]
+```
+
+Le workflow de release se compose de 3 jobs séquentiels :
+
+#### 1. **Job `version`** - Calcul de la Version
+
+- 📝 Lit la version actuelle depuis `pyproject.toml`
+- 🔍 Vérifie si un tag Git existe déjà pour cette version
+- 🔄 Si le tag existe : auto-incrémente le PATCH (`0.1.0` → `0.1.1`)
+- ✅ Si nouveau : utilise la version du fichier
+
+#### 2. **Job `ci`** - Tests et Build
+
+- 🧪 Exécute tous les tests (unitaires, régression, intégration)
+- 🐳 Build les images Docker avec tags `latest` + version
+- 📦 Push vers GitHub Container Registry
+
+#### 3. **Job `release`** - Publication Coordonnée
+
+- 📝 Met à jour tous les fichiers avec la nouvelle version
+- ⎈ Package et publie la chart Helm vers GHCR
+- 🏷️ Crée le tag Git et la GitHub Release
+- 📋 Génère les notes de release automatiquement
+
+### Format de Versioning
+
+**Semantic Versioning** : `MAJOR.MINOR.PATCH`
+
+- **MAJOR** : Changements incompatibles
+- **MINOR** : Nouvelles fonctionnalités compatibles
+- **PATCH** : Corrections de bugs (auto-incrémenté)
+
+### Déclenchement des Releases
+
+#### **Release Automatique** (Recommandé)
+
+```bash
+# 1. Modifier le code
+git add .
+git commit -m "feat: nouvelle fonctionnalité"
+
+# 2. Push sur main
+git push origin main
+
+# → La release se déclenche automatiquement
+# → Version PATCH auto-incrémentée si nécessaire
+```
+
+#### **Release Manuelle avec Version Spécifique**
+
+```bash
+# 1. Modifier la version dans pyproject.toml
+sed -i 's/version = "0.1.0"/version = "0.2.0"/' pyproject.toml
+
+# 2. Commit et push
+git add pyproject.toml
+git commit -m "bump: version 0.2.0"
+git push origin main
+
+# → Utilise exactement la version 0.2.0
+```
+
+### Artifacts Publiés
+
+Chaque release génère automatiquement :
+
+| Artifact           | Localisation                                   | Format                       |
+| ------------------ | ---------------------------------------------- | ---------------------------- |
+| **Image Docker**   | `ghcr.io/naqa92/todolist:VERSION`              | Multi-platform (AMD64/ARM64) |
+| **Chart Helm**     | `oci://ghcr.io/naqa92/charts/todolist:VERSION` | OCI Artifact                 |
+| **Tag Git**        | `v0.1.0`                                       | Annotated tag avec notes     |
+| **GitHub Release** | GitHub Releases                                | Changelog automatique        |
+
+### Utilisation des Artifacts
+
+#### **Déploiement Docker**
+
+```bash
+# Version spécifique
+docker run ghcr.io/naqa92/todolist:0.1.0
+
+# Dernière version
+docker run ghcr.io/naqa92/todolist:latest
+```
+
+#### **Déploiement Helm**
+
+```bash
+# Installer depuis le registry OCI
+helm install todolist oci://ghcr.io/naqa92/charts/todolist --version 0.1.0
+
+# Lister les versions disponibles
+helm search repo ghcr.io/naqa92/charts/todolist --versions
+```
+
+#### **Référencer une Version Git**
+
+```bash
+# Checkout d'une version spécifique
+git checkout v0.1.0
+
+# Voir toutes les versions
+git tag -l "v*"
+```
+
+### Fichiers Synchronisés
+
+Le système maintient automatiquement la cohérence entre :
+
+```bash
+pyproject.toml          # version = "0.1.0"
+charts/todolist/Chart.yaml     # version: 0.1.0 / appVersion: 0.1.0
+charts/todolist/values.yaml    # image.tag: "0.1.0"
+```
+
+### Notes de Release Automatiques
+
+Chaque GitHub Release contient :
+
+- **Artifacts coordonnés** avec leurs URLs
+- **Changelog automatique** depuis le dernier tag
+- **Instructions d'utilisation** pour chaque artifact
+
+### Exemple de Release
+
+```markdown
+# Release v0.1.0
+
+## Coordinated Release Artifacts
+
+- **Python package**: `todolist@0.1.0`
+- **Docker image**: `ghcr.io/naqa92/todolist:0.1.0` (also available as `latest`)
+- **Helm chart**: `oci://ghcr.io/naqa92/charts/todolist:0.1.0`
+
+## Changes
+
+- feat: add user authentication
+- fix: resolve database connection issue
+- docs: update deployment guide
+```
+
+### Bonnes Pratiques
+
+#### **Commits Conventionnels**
+
+```bash
+feat: nouvelle fonctionnalité
+fix: correction de bug
+docs: mise à jour documentation
+chore: tâches de maintenance
+```
+
+#### **Stratégie de Branches**
+
+- **`main`** : Branche de production (releases automatiques)
+- **Feature branches** : Développement (pas de release)
+
+#### **Gestion des Versions**
+
+- **Auto-incrémentation** : Idéal pour le développement continu
+- **Versions manuelles** : Pour les releases majeures/mineures planifiées
+
+### Dépannage
+
+#### **Version non incrémentée**
+
+```bash
+# Vérifier la version actuelle
+grep 'version = ' pyproject.toml
+
+# Voir les tags existants
+git tag -l "v*"
+
+# Forcer une nouvelle version
+sed -i 's/version = "0.1.0"/version = "0.1.1"/' pyproject.toml
+```
+
+#### **Release échouée**
+
+```bash
+# Vérifier les logs du workflow
+gh run list --workflow=ci.yaml
+
+# Voir les détails d'un run
+gh run view [RUN_ID]
+```
+
 ## ☸️ Déploiement Kubernetes
 
 ### Déploiement Local avec Kind

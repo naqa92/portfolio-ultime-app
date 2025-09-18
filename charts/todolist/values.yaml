@@ -6,7 +6,7 @@ terminationGracePeriodSeconds: 120 # synchronisée avec deregistration_delay (AL
 
 image:
   repository: ghcr.io/naqa92/todolist
-  tag: "latest"
+  tag: "0.1.0"
   pullPolicy: IfNotPresent
 
 resources:
@@ -59,12 +59,17 @@ service:
 
 ingress:
   enabled: true
-  className: nginx
+  className: "nginx" # local: nginx / EKS: alb
   host: todolist.127.0.0.1.nip.io
   annotations: {}
   # alb.ingress.kubernetes.io/scheme: internet-facing
+  # alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443},{"HTTP":80}]'
+  # alb.ingress.kubernetes.io/ssl-redirect: "443"
+  # external-dns.alpha.kubernetes.io/hostname: app.ndebaa.com
   # cert-manager.io/cluster-issuer: "letsencrypt"
+  # cert-manager.io/secret-template: |
+  # {"annotations": {"cert-manager-sync.lestak.sh/sync-enabled":"true", "cert-manager-sync.lestak.sh/acm-enabled":"true", "cert-manager-sync.lestak.sh/acm-region": "eu-west-3"}}
   tls: []
   # - hosts:
-  #     - myapp.example.com
-  #   secretName: letsencrypt-myapp
+  #     - app.ndebaa.com
+  #   secretName: letsencrypt-app

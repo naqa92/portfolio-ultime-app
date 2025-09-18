@@ -1,3 +1,12 @@
+[project]
+name = "todolist"
+version = "0.1.0"
+description = "A simple todo list application"
+authors = [
+    {name = "naqa92", email = "naqa92@users.noreply.github.com"},
+]
+requires-python = ">=3.13"
+
 [tool.ruff]
 # Configuration minimale pour Ruff
 line-length = 88

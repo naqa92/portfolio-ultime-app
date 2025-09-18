@@ -6,7 +6,7 @@ on:
 
 permissions: # Pour le GITHUB_TOKEN par défaut
   contents: write # Création de tags/releases
-  packages: read # Authentification avec GHCR
+  packages: write # Authentification + Publication vers GHCR
   actions: read # Utilisation des actions de cache/artefacts
 
 jobs:
@@ -72,7 +72,7 @@ jobs:
       #   run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_ENV
 
       - name: Ruff Lint
-        uses: astral-sh/ruff-action@v3
+        uses: astral-sh/ruff-action@v3.5.1
         with:
           args: "check --output-format junit --output-file lint-report.xml"
 

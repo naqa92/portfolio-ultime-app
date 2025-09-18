@@ -7,6 +7,7 @@ on:
 permissions: # Pour le GITHUB_TOKEN par défaut
   contents: write # Création de tags/releases
   packages: write # Authentification + Publication vers GHCR
+  security-events: write # Pour CodeQL
   actions: read # Utilisation des actions de cache/artefacts
 
 jobs:
@@ -74,6 +75,11 @@ jobs:
           version: "latest"
           args: "check --output-format junit --output-file lint-report.xml"
 
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+
       - name: Setup python
         uses: actions/setup-python@v5
         with:
@@ -89,6 +95,9 @@ jobs:
 
       - name: Run regression tests
         run: devbox run --config devbox-ci.json regression-tests
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3 # Permet le build multi-platform images
@@ -272,7 +281,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ needs.version.outputs.new-version }}
-          name: Release v${{ needs.version.outputs.new-version }}
+          name: v${{ needs.version.outputs.new-version }}
           bodyFile: RELEASE_NOTES.md
           draft: false
           prerelease: false

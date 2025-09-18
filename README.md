@@ -131,11 +131,11 @@ Avantages :
 - ✅ Analyse des workflows GitHub Actions : Détection des vulnérabilités spécifiques aux workflows CI/CD
 - ✅ Support multi-langages : JavaScript, TypeScript, Python, Java, C#, C++, Go, Ruby
 
-Activation : Activer "Code scanning alerts" dans l'onglet Security du repo et Setup de "CodeQL analysis"
+Le résultat du test se trouve dans : Security > Code scanning > Tools
 
-> _alternative à Bandit et Semgrep_
+> _Note: CodeQL est gratuit pour les dépôts publics. Pour les dépôts privés, il faut la licence Advanced Security (payant)_
 
-> _note: Intégration de Bandit possible via Ruff : [doc](https://mcginniscommawill.com/posts/2025-01-25-intro-to-bandit/)_
+> _Alternative : Bandit et Semgrep (Intégration de Bandit possible via Ruff : [doc](https://mcginniscommawill.com/posts/2025-01-25-intro-to-bandit/))_
 
 ### 6. Smoke test Docker (`scripts/run-smoke-test.sh`)
 

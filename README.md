@@ -118,7 +118,26 @@ Complémentaires aux tests unitaires existants
 - ✅ Workflow end-to-end (Test rapide de l'intégration complète)
 - ✅ Gestion des cas limites (Gestion des titres vides/espaces)
 
-### 5. Smoke test Docker (`scripts/run-smoke-test.sh`)
+### 5. CodeSQL - SAST (`github/codeql-action/analyze@v3`)
+
+CodeQL est le moteur d'analyse statique développé par GitHub qui excelle particulièrement dans l'écosystème GitHub Actions.
+
+Avantages :
+
+- ✅ Intégration native GitHub : Configuration automatique via la Security tab
+- ✅ Analyse sémantique avancée : Traite le code comme une base de données interrogeable pour des analyses approfondies
+- ✅ Taint tracking sophistiqué : Détecte les flux de données dangereux à travers les fonctions et fichiers
+- ✅ Copilot Autofix : Suggestions de corrections automatiques pour les vulnérabilités détectées
+- ✅ Analyse des workflows GitHub Actions : Détection des vulnérabilités spécifiques aux workflows CI/CD
+- ✅ Support multi-langages : JavaScript, TypeScript, Python, Java, C#, C++, Go, Ruby
+
+Activation : Activer "Code scanning alerts" dans l'onglet Security du repo et Setup de "CodeQL analysis"
+
+> _alternative à Bandit et Semgrep_
+
+> _note: Intégration de Bandit possible via Ruff : [doc](https://mcginniscommawill.com/posts/2025-01-25-intro-to-bandit/)_
+
+### 6. Smoke test Docker (`scripts/run-smoke-test.sh`)
 
 Run de l'image Docker pour vérifier le health status (via docker inspect) qui reflète le résultat du HEALTHCHECK interne. (runner → container)
 

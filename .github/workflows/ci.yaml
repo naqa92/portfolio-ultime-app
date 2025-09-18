@@ -79,6 +79,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: python
+          tools: linked # version des outils CodeQL qui est fournie avec l'action.
 
       - name: Setup python
         uses: actions/setup-python@v5

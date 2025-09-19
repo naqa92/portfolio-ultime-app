@@ -122,7 +122,7 @@ jobs:
             ghcr.io/${{ github.actor }}/todolist:${{ needs.version.outputs.new-version || 'latest' }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ghcr.io/${{ github.actor }}/todolist:${{ needs.version.outputs.new-version || 'latest' }}
           format: "sarif"

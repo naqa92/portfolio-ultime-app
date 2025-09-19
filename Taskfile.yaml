@@ -3,8 +3,6 @@ version: "3"
 tasks:
   cluster-create:
     desc: Crée un kind cluster et déploie l'application
-    vars:
-      TIMEOUT: 300s
     cmds:
       - task: cluster-create-kind
       - task: wait-cluster-ready
@@ -21,8 +19,8 @@ tasks:
   wait-cluster-ready:
     desc: Attend que le cluster soit prêt
     cmds:
-      - kubectl wait --for=condition=Ready nodes --all --timeout=300s
-      - kubectl wait --for=condition=Ready pods -n kube-system -l k8s-app=kube-dns --timeout=300s
+      - kubectl wait --for=condition=Ready nodes --all --timeout=120s
+      - kubectl wait --for=condition=Ready pods -n kube-system -l k8s-app=kube-dns --timeout=120s
       - sleep 5
     internal: true
 
@@ -45,4 +43,6 @@ tasks:
       - kubectl create namespace demo --dry-run=client -o yaml | kubectl apply -f - --validate=false
       - kubectl -n demo create secret generic db-app --from-literal $"uri=($DATABASE_URL)"
       - helm install todolist ./charts/todolist -n demo
+      - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=todolist --timeout=120s
+      - curl -s http://todolist.127.0.0.1.nip.io/ || (echo "L'accès à todolist.127.0.0.1.nip.io a échoué" && exit 1)
     internal: true

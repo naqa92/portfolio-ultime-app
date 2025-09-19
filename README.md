@@ -137,7 +137,30 @@ Le résultat du test se trouve dans : Security > Code scanning > Tools
 
 > _Alternative : Bandit et Semgrep (Intégration de Bandit possible via Ruff : [doc](https://mcginniscommawill.com/posts/2025-01-25-intro-to-bandit/))_
 
-### 6. Smoke test Docker (`scripts/run-smoke-test.sh`)
+### 6. Trivy - Container Security Scanning (`aquasecurity/trivy-action@0.33.1`)
+
+Trivy est un scanner de sécurité complet qui analyse les images Docker pour détecter les vulnérabilités.
+
+Avantages :
+
+- ✅ Scanner multi-format : Images Docker, systèmes de fichiers, dépôts Git, Kubernetes manifests
+- ✅ Base de données de vulnérabilités complète : CVE, OSV, GitHub Security Advisory
+- ✅ Support multi-langages : Python, Node.js, Java, Go, Ruby, PHP, .NET, etc.
+- ✅ Intégration GitHub Security : Upload SARIF automatique vers l'onglet Security
+- ✅ Détection approfondie : OS packages, dépendances applicatives, fichiers de configuration
+- ✅ Performance optimisée : Scan rapide avec cache intelligent
+
+Configuration pipeline :
+
+- **Format SARIF** : Résultats structurés pour intégration GitHub Security
+- **Scan post-build** : Analyse de l'image Docker finale construite
+- **Upload automatique** : Vulnérabilités visibles dans Security > Code scanning
+
+Le scan s'exécute après la construction de l'image Docker et remonte automatiquement les vulnérabilités détectées dans l'onglet Security de GitHub.
+
+> _Alternative : Snyk pour génération automatique de PR avec fix de sécurité_
+
+### 7. Smoke test Docker (`scripts/run-smoke-test.sh`)
 
 Run de l'image Docker pour vérifier le health status (via docker inspect) qui reflète le résultat du HEALTHCHECK interne. (runner → container)
 
@@ -546,6 +569,7 @@ on:
       - closed # à séparer via pr-close.yaml
 ```
 
+- Passer à Snyk avec auto-génération de PR
 - Validation des données côté serveur plus stricte - Flask-WTF
 - Gestion des migrations - Atlas
 - Rate limiting - Protection contre les abus

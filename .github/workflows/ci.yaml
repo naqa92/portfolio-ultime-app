@@ -121,6 +121,19 @@ jobs:
             ghcr.io/${{ github.actor }}/todolist:latest
             ghcr.io/${{ github.actor }}/todolist:${{ needs.version.outputs.new-version || 'latest' }}
 
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ghcr.io/${{ github.actor }}/todolist:${{ needs.version.outputs.new-version || 'latest' }}
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
       - name: Smoke Test
         run: devbox run --config devbox-ci.json smoke-test
         env:

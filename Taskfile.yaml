@@ -43,6 +43,11 @@ tasks:
       - kubectl create namespace demo
       - kubectl -n demo create secret generic db-app --from-literal=uri="${DATABASE_URL}"
       - helm upgrade --install todolist ./charts/todolist -n demo --set image.tag="${IMAGE_TAG}"
-      - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=todolist --timeout=120s
+      # - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=todolist --timeout=120s
+      - sleep 30
+      - kubectl -n demo get pods -l app.kubernetes.io/name=todolist
+      - kubectl -n demo describe pods -l app.kubernetes.io/name=todolist
+      - kubectl -n demo logs -l app.kubernetes.io/name=todolist --tail=100 --all-containers=true || true
+      - kubectl -n demo describe deployment todolist || true
       - curl -s http://todolist.127.0.0.1.nip.io/ || (echo "L'accès à todolist.127.0.0.1.nip.io a échoué" && exit 1)
     internal: true

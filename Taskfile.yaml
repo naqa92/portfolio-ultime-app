@@ -40,9 +40,9 @@ tasks:
   deploy-app:
     desc: Déploie l'application dans le cluster
     cmds:
-      - kubectl create namespace demo --dry-run=client -o yaml | kubectl apply -f - --validate=false
-      - kubectl -n demo create secret generic db-app --from-literal $"uri=($DATABASE_URL)"
-      - helm install todolist ./charts/todolist -n demo
+      - kubectl create namespace demo
+      - kubectl -n demo create secret generic db-app --from-literal=uri="${DATABASE_URL}"
+      - helm upgrade --install todolist ./charts/todolist -n demo --set image.tag="${IMAGE_TAG}"
       - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=todolist --timeout=120s
       - curl -s http://todolist.127.0.0.1.nip.io/ || (echo "L'accès à todolist.127.0.0.1.nip.io a échoué" && exit 1)
     internal: true

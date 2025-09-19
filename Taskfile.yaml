@@ -6,6 +6,7 @@ tasks:
     cmds:
       - task: cluster-create-kind
       - task: wait-cluster-ready
+      - task: load-docker-image
       - task: install-ingress-nginx
       - task: deploy-app
       - echo "Déploiement OK!"
@@ -22,6 +23,16 @@ tasks:
       - kubectl wait --for=condition=Ready nodes --all --timeout=120s
       - kubectl wait --for=condition=Ready pods -n kube-system -l k8s-app=kube-dns --timeout=120s
       - sleep 5
+    internal: true
+
+  load-docker-image:
+    desc: Charge l'image Docker locale dans le cluster Kind
+    cmds:
+      - |
+        IMAGE_NAME="ghcr.io/naqa92/todolist:${IMAGE_TAG:-latest}"
+        echo "Loading Docker image: $IMAGE_NAME"
+        kind load docker-image "$IMAGE_NAME"
+        echo "Image loaded successfully into Kind cluster"
     internal: true
 
   install-ingress-nginx:
@@ -42,12 +53,10 @@ tasks:
     cmds:
       - kubectl create namespace demo
       - kubectl -n demo create secret generic db-app --from-literal=uri="${DATABASE_URL}"
-      - helm upgrade --install todolist ./charts/todolist -n demo --set image.tag="${IMAGE_TAG}"
+      - helm upgrade --install todolist ./charts/todolist -n demo --set image.tag="${IMAGE_TAG}" --set image.pullPolicy=Never # use local image
       # - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=todolist --timeout=120s
-      - sleep 30
+      - sleep 10
       - kubectl -n demo get pods -l app.kubernetes.io/name=todolist
       - kubectl -n demo describe pods -l app.kubernetes.io/name=todolist
-      - kubectl -n demo logs -l app.kubernetes.io/name=todolist --tail=100 --all-containers=true || true
-      - kubectl -n demo describe deployment todolist || true
       - curl -s http://todolist.127.0.0.1.nip.io/ || (echo "L'accès à todolist.127.0.0.1.nip.io a échoué" && exit 1)
     internal: true

@@ -161,11 +161,10 @@ jobs:
           api_key: ${{ secrets.NEON_API_KEY }}
 
       - name: Minimal deployment
-        run: |
-          devbox run --config devbox-ci.json \
-            --env DATABASE_URL="${{ steps.create-database.outputs.db_url }}" \
-            --env IMAGE_TAG="${{ needs.version.outputs.new-version || 'latest' }}" \
-            minimal-deployment
+        run: devbox run --config devbox-ci.json minimal-deployment
+        env:
+          DATABASE_URL: ${{ steps.create-database.outputs.db_url }}
+          IMAGE_TAG: ${{ needs.version.outputs.new-version || 'latest' }}
 
       - name: Run integration tests
         run: devbox run --config devbox-ci.json integration-tests

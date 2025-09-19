@@ -6,7 +6,7 @@ terminationGracePeriodSeconds: 120 # synchronisée avec deregistration_delay (AL
 
 image:
   repository: ghcr.io/naqa92/todolist
-  tag: "0.1.2"
+  tag: "0.1.3"
   pullPolicy: IfNotPresent
 
 resources:

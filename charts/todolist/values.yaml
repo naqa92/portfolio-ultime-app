@@ -6,7 +6,7 @@ terminationGracePeriodSeconds: "30"
 
 image:
   repository: ghcr.io/naqa92/todolist
-  tag: "0.1.3"
+  tag: "0.1.4"
   pullPolicy: IfNotPresent
   imagePullSecrets: []
 resources:

@@ -325,10 +325,11 @@ jobs:
           yq eval -i '.spec.sources[0].targetRevision = strenv(VERSION)' ./argocd-apps/todolist.yaml
 
       - name: Commit ArgoCD manifest update
+        working-directory: portfolio-ultime-config
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add values/todolist-values.yaml argocd-apps/todolist.yaml
+          git add ./values/todolist-values.yaml ./argocd-apps/todolist.yaml
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

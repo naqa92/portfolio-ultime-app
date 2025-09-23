@@ -223,12 +223,15 @@ Variables d'environnement GitHub :
 
 ```bash
 # Secrets
-NEON_API_KEY          # Clé API Neon pour DB éphémère
-PRIVATE_REGISTRY_PASSWORD  # Token GitHub pour GHCR
+NEON_API_KEY          # Clé API Neon pour DB éphémère (auto-généré)
+PRIVATE_REGISTRY_PASSWORD  # Token GitHub pour GHCR (repo + package permissions)
+CONFIG_REPO_PAT # Token GitHub pour ArgoCD config repo (repo permissions)
 
 # Variables
-NEON_PROJECT_ID       # ID du projet Neon
+NEON_PROJECT_ID       # ID du projet Neon (auto-généré)
 ```
+
+Token pour repo infra : `CONFIG_REPO_PAT` (read package permissions)
 
 ## 🏷️ Système de Versioning et Releases
 
@@ -555,9 +558,10 @@ Configuration dans `devbox-ci.json` pour :
 - Déploiement application
 - Gestion des dépendances
 
-## Roadmap
+## TODO
 
-- Branch Protection : Blocage des push directs sur main (Review MR nécessaire)
+- Branch Protection : Blocage des push directs sur main (Review PR nécessaire)
+  > Update ArgoCD manifest : Modifier aussi le push direct par une PR
 
 ```yaml
 on:
@@ -574,7 +578,6 @@ on:
 - Gestion des migrations - Atlas
 - Rate limiting - Protection contre les abus
 - Monitoring - Métriques Prometheus/OpenTelemetry
-- Improve frontend : Tailwind CSS, Alpine JS
 - Démarrage Rapide : A revoir (simplifier)
 
 ---

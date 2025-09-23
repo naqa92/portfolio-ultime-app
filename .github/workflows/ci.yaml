@@ -111,7 +111,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }} # user GitHub
-          password: ${{ secrets.PRIVATE_REGISTRY_PASSWORD }} # PAT Token with repo + package permissions
+          password: ${{ secrets.PRIVATE_REGISTRY_PASSWORD }} # PAT avec repo + package permissions
 
       - name: Build and export to Docker
         uses: docker/build-push-action@v6
@@ -306,6 +306,36 @@ jobs:
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: update manifests
-      # - name: commit-changes # git commit -m "Release ${{ env.TAG }} [skip ci]
-      # - name: push-changes # github-push-action@master
+      - name: Checkout ArgoCD config repo
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.actor }}/portfolio-ultime-config
+          token: ${{ secrets.CONFIG_REPO_PAT }} # PAT avec repo permissions
+          path: portfolio-ultime-config
+          fetch-depth: 0
+
+      - name: Setup yq
+        uses: frenck/action-setup-yq@v1
+
+      - name: Update image tag and ArgoCD targetRevision
+        run: |
+          VERSION=${{ needs.version.outputs.new-version }}
+          yq eval -i '.image.tag = strenv(VERSION)' ./values/todolist-values.yaml
+          yq eval -i '.spec.sources[0].targetRevision = strenv(VERSION)' ./argocd-apps/todolist.yaml
+
+      - name: Commit ArgoCD manifest update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add values/todolist-values.yaml argocd-apps/todolist.yaml
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update todolist chart+image to $VERSION"
+          fi
+
+      - name: Push ArgoCD manifest update
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.CONFIG_REPO_PAT }}
+          branch: main

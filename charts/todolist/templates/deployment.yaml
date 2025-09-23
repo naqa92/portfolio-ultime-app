@@ -20,6 +20,10 @@ spec:
 {{- if $root.Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ $root.Values.terminationGracePeriodSeconds }}
 {{- end }}
+  {{- if $root.Values.imagePullSecrets }}
+     imagePullSecrets:
+  {{ toYaml $root.Values.imagePullSecrets | nindent 6 }}
+  {{- end }}
       containers:
         - name: {{ $root.Release.Name }}
           image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"

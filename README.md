@@ -561,7 +561,7 @@ Configuration dans `devbox-ci.json` pour :
 ## TODO
 
 - Branch Protection : Blocage des push directs sur main (Review PR nécessaire)
-  > Update ArgoCD manifest : Modifier aussi le push direct par une PR
+  > _Update ArgoCD manifest : Modifier aussi le push direct par une PR_
 
 ```yaml
 on:

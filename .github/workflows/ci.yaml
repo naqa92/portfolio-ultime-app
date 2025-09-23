@@ -318,6 +318,7 @@ jobs:
         uses: frenck/action-setup-yq@v1
 
       - name: Update image tag and ArgoCD targetRevision
+        working-directory: portfolio-ultime-config
         run: |
           VERSION=${{ needs.version.outputs.new-version }}
           yq eval -i '.image.tag = strenv(VERSION)' ./values/todolist-values.yaml

@@ -21,8 +21,8 @@ spec:
       terminationGracePeriodSeconds: {{ $root.Values.terminationGracePeriodSeconds }}
 {{- end }}
   {{- if $root.Values.imagePullSecrets }}
-     imagePullSecrets:
-  {{ toYaml $root.Values.imagePullSecrets | nindent 6 }}
+      imagePullSecrets:
+  {{ toYaml $root.Values.imagePullSecrets | nindent 8 }}
   {{- end }}
       containers:
         - name: {{ $root.Release.Name }}

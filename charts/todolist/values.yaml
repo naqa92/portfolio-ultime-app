@@ -8,7 +8,9 @@ image:
   repository: ghcr.io/naqa92/todolist
   tag: "0.1.5"
   pullPolicy: IfNotPresent
-  imagePullSecrets: []
+
+imagePullSecrets: []
+
 resources:
   limits:
     cpu: "500m"

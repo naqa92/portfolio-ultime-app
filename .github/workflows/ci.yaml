@@ -319,13 +319,16 @@ jobs:
 
       - name: Update image tag and ArgoCD targetRevision
         working-directory: portfolio-ultime-config
+        env:
+          VERSION: ${{ needs.bump-version.outputs.new-version }}
         run: |
-          VERSION=${{ needs.version.outputs.new-version }}
           yq eval -i '.image.tag = strenv(VERSION)' ./values/todolist-values.yaml
           yq eval -i '.spec.sources[0].targetRevision = strenv(VERSION)' ./argocd-apps/todolist.yaml
 
       - name: Commit and push ArgoCD manifest update
         working-directory: portfolio-ultime-config
+        env:
+          VERSION: ${{ needs.bump-version.outputs.new-version }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"

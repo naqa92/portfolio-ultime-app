@@ -91,7 +91,7 @@ jobs:
         with:
           project-path: devbox-ci.json
 
-      - name: Run units tests with coverage and HTML report
+      - name: Run units tests with coverage
         run: devbox run --config devbox-ci.json units-tests
 
       - name: Run regression tests

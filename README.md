@@ -57,6 +57,26 @@ portfolio-ultime/
 
 ---
 
+## Pré-requis
+
+- Secrets/Variables d'environnement GitHub :
+
+| Secret                  | Description     |
+| ----------------------- | --------------- |
+| `AWS_ACCESS_KEY_ID`     | Clé d'accès AWS |
+| `AWS_SECRET_ACCESS_KEY` | Clé secrète AWS |
+
+| Type     | Nom                         | Description                                              |
+| -------- | --------------------------- | -------------------------------------------------------- |
+| Secret   | `NEON_API_KEY`              | Clé API Neon pour base de données éphémère (auto-généré) |
+| Secret   | `PRIVATE_REGISTRY_PASSWORD` | Token GitHub pour GHCR (repo + package permissions)      |
+| Secret   | `CONFIG_REPO_PAT`           | Token GitHub pour ArgoCD config repo (repo permissions)  |
+| Variable | `NEON_PROJECT_ID`           | ID du projet Neon (auto-généré)                          |
+
+- Token pour repo infra : `ghcr-token` (read package permissions)
+
+---
+
 ## 🐳 Containerisation Docker
 
 Le `Dockerfile` utilise un build multi-stage pour optimiser la taille et la sécurité :
@@ -216,22 +236,6 @@ La pipeline automatisée inclut :
    - Rapports de tests HTML
    - Coverage report
    - Artefacts conservés 7 jours
-
-### Configuration Requise
-
-Variables d'environnement GitHub :
-
-```bash
-# Secrets
-NEON_API_KEY          # Clé API Neon pour DB éphémère (auto-généré)
-PRIVATE_REGISTRY_PASSWORD  # Token GitHub pour GHCR (repo + package permissions)
-CONFIG_REPO_PAT # Token GitHub pour ArgoCD config repo (repo permissions)
-
-# Variables
-NEON_PROJECT_ID       # ID du projet Neon (auto-généré)
-```
-
-Token pour repo infra : `CONFIG_REPO_PAT` (read package permissions)
 
 ## 🏷️ Système de Versioning et Releases
 

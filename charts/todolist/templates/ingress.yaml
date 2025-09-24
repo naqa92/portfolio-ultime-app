@@ -26,5 +26,5 @@ spec:
                 port:
                   number: {{ .Values.service.port }}
             path: /
-            pathType: ImplementationSpecific # Laisse le contrôleur décider entre Prefix et Exact
+            pathType: Prefix
 {{- end }}

@@ -25,7 +25,6 @@ L'application est conçue pour démontrer une architecture complète de dévelop
 - [Système de Versioning et Releases](#système-de-versioning-et-releases)
 - [Déploiement Kubernetes](#déploiement-kubernetes)
 - [Sécurité](#sécurité)
-- [Performance](#performance)
 - [Licence](#licence)
 - [TODO](#todo)
 
@@ -60,7 +59,7 @@ portfolio-ultime-app/
 ├── app/                         # Code source de l'application Flask
 │   ├── __init__.py              # Initialisation du package
 │   ├── app.py                   # Point d'entrée principal
-│   ├── requirements.txt         # Dépendances Python (prod)
+│   ├── requirements.txt         # Dépendances Python (app)
 │   ├── instance/
 │   │   └── todos.db             # Base SQLite locale (dev)
 │   └── templates/               # Fichiers HTML (Jinja2)
@@ -132,14 +131,14 @@ CREATE TABLE todos (
 
 ## Dépendances
 
-### Dépendances de Production (`app/requirements.txt`)
+### Dépendances app (`app/requirements.txt`)
 
 - **Flask** (3.1.2) : Framework web Python
 - **Flask-SQLAlchemy** (3.1.1) : Extension SQLAlchemy pour Flask
 - **psycopg2-binary** (2.9.10) : Driver PostgreSQL
-- **Gunicorn** (23.0.0) : Serveur WSGI pour production
+- **Gunicorn** (23.0.0) : WSGI pour lancer l’application (via Dockerfile)
 
-### Dépendances de Développement (`tests/requirements-dev.txt`)
+### Dépendances tests (`tests/requirements-dev.txt`)
 
 - **pytest** (8.4.2) : Framework de tests
 - **pytest-flask** (1.3.0) : Plugin Flask pour pytest
@@ -148,7 +147,7 @@ CREATE TABLE todos (
 
 ## Configuration
 
-### Prérequis
+### Pré-requis
 
 - Secrets/Variables d'environnement GitHub :
 
@@ -173,7 +172,7 @@ L'accès à l'application GitHub est accordé exclusivement au dépôt "portfoli
   - SQLite : `sqlite:///todos.db` (par défaut)
   - PostgreSQL : `postgresql://user:pass@host:port/db`
 
-### Healthcheck
+### Healthcheck & Probes
 
 - **Endpoints** : `/health`
 - **Réponse** : JSON
@@ -251,7 +250,11 @@ Le `Dockerfile` utilise un build multi-stage pour optimiser la taille et la séc
 
 Ruff est un linter Python qui remplace plusieurs outils (flake8, isort, pycodestyle)
 
-- ✅ Configuration via `pyproject.toml`
+- Configuration via `pyproject.toml`
+
+Report
+
+![Ruff](images/ruff.png)
 
 > **Note** : _Erreur E402 ignorée (import au niveau module qui n'est pas au début du fichier) dans les tests. C'est une pratique courante dans les tests, mais Ruff la signale comme une erreur._
 
@@ -275,11 +278,25 @@ Ruff est un linter Python qui remplace plusieurs outils (flake8, isort, pycodest
 --self-contained-html   # Fichier HTML autonome (inclut tout)
 ```
 
+Report
+
+![Units test](images/units-test.png)
+
+Coverage
+
+![Coverage](images/Coverage.png)
+
 ### 3. Tests d'Intégration (`tests/integration.py`)
 
 - ✅ Connexion base de données Neon
 - ✅ Opérations CRUD réelles sur PostgreSQL
 - ✅ Validation de la persistance
+
+Report
+
+![Integration test](images/integration-test.png)
+
+Neon DB
 
 ![Neon DB](images/integration.png)
 
@@ -291,6 +308,10 @@ Complémentaires aux tests unitaires existants
 - ✅ Compatibilité schéma base de données (Vérification que la structure reste cohérente)
 - ✅ Workflow end-to-end (Test rapide de l'intégration complète)
 - ✅ Gestion des cas limites (Gestion des titres vides/espaces)
+
+Report
+
+![Regression test](images/regression-test.png)
 
 ### 5. CodeSQL - SAST (`github/codeql-action/analyze@v3`)
 
@@ -334,11 +355,15 @@ Configuration pipeline :
 
 Le scan s'exécute après la construction de l'image Docker et remonte automatiquement les vulnérabilités détectées dans l'onglet Security de GitHub.
 
+![Trivy](images/trivy.png)
+
 > _Alternative : Snyk pour génération automatique de PR avec fix de sécurité_
 
 ### 7. Smoke test Docker (`scripts/run-smoke-test.sh`)
 
 Run de l'image Docker pour vérifier le health status (via docker inspect) qui reflète le résultat du HEALTHCHECK interne. (runner → container)
+
+![Smoke test](images/smoke-test.png)
 
 > **Note** : [Documentation](https://docs.docker.com/build/ci/github-actions/test-before-push/)
 
@@ -503,6 +528,8 @@ DATABASE_URL="postgresql://..." task cluster-create
 - **ingress-nginx** : activation du hostPort pour les ports 80 et 443
 - **déploiement de l'app** : namespace, secret, deployment, service et ingress
 
+![Minimal deployment](images/minimal-deployment.png)
+
 > _Application accessible sur : todolist.127.0.0.1.nip.io (nip.io fonctionne en redirigeant 127.0.0.1.nip.io vers 127.0.0.1)_
 
 ### Utilisation de la chart Helm todolist
@@ -515,42 +542,11 @@ helm upgrade todolist ./charts/todolist -n demo # Mise à jour
 
 ## Sécurité
 
-### Bonnes Pratiques Implémentées
-
 - **Utilisateur non-root** : L'image Docker utilise un utilisateur non-privilégié pour la sécurité
 - **Health checks** : Endpoints de surveillance pour la disponibilité et la santé
 - **Gestion des erreurs** : Rollback automatique des transactions DB en cas d'erreur
 - **Validation des entrées** : Nettoyage des espaces dans les titres de tâches
 - **Sécurité des conteneurs** : Build multi-stage réduisant la surface d'attaque
-
-### Considérations de Sécurité
-
-- Utilisez HTTPS en production
-- Protégez les secrets GitHub Actions
-- Surveillez les vulnérabilités avec Trivy et CodeQL
-- Limitez l'accès aux bases de données
-
-## Performance
-
-### Optimisations Implémentées
-
-- **Build Multi-Stage Docker** : Réduction de la taille de l'image
-- **Health Checks** : Détection précoce des problèmes
-- **Connexions DB Persistantes** : Via SQLAlchemy
-- **Cache des Dépendances** : Layers Docker optimisés
-
-### Métriques de Performance
-
-- **Temps de Démarrage** : < 5 secondes
-- **Taille Image** : ~50MB (slim Python)
-- **Utilisation Mémoire** : < 100MB par instance
-- **Temps de Réponse** : < 100ms pour les opérations CRUD
-
-### Monitoring
-
-- Health endpoint pour les probes K8s
-- Métriques potentielles : temps de réponse, taux d'erreur
-- Logs structurés avec niveaux appropriés
 
 ## Licence
 

@@ -246,6 +246,17 @@ Le `Dockerfile` utilise un build multi-stage pour optimiser la taille et la séc
 
 ## Stratégie de Tests Multi-Niveaux
 
+### Exécution des Tests
+
+L'exécution des tests se fait via des scripts dédiés pour chaque niveau :
+
+- **Unitaires** : `./scripts/run-units-tests.sh`
+- **Intégration** : `./scripts/run-integration-tests.sh` (nécessite `$DATABASE_URL`)
+- **Régression** : `./scripts/run-regression-tests.sh`
+- **Smoke test Docker** : `./scripts/run-smoke-test.sh` (nécessite `$IMAGE` et `$NAME`)
+
+Chaque script génère des rapports et affiche les résultats dans le terminal.
+
 ### 1. Linting avec Ruff
 
 Ruff est un linter Python qui remplace plusieurs outils (flake8, isort, pycodestyle)
@@ -284,7 +295,7 @@ Report
 
 Coverage
 
-![Coverage](images/Coverage.png)
+![Coverage](images/coverage.png)
 
 ### 3. Tests d'Intégration (`tests/integration.py`)
 
@@ -366,17 +377,6 @@ Run de l'image Docker pour vérifier le health status (via docker inspect) qui r
 ![Smoke test](images/smoke-test.png)
 
 > **Note** : [Documentation](https://docs.docker.com/build/ci/github-actions/test-before-push/)
-
-### Exécution des Tests
-
-L'exécution des tests se fait via des scripts dédiés pour chaque niveau :
-
-- **Unitaires** : `./scripts/run-units-tests.sh`
-- **Intégration** : `./scripts/run-integration-tests.sh` (nécessite `$DATABASE_URL`)
-- **Régression** : `./scripts/run-regression-tests.sh`
-- **Smoke test Docker** : `./scripts/run-smoke-test.sh` (nécessite `$IMAGE` et `$NAME`)
-
-Chaque script génère des rapports et affiche les résultats dans le terminal.
 
 ## Pipeline CI/CD
 
@@ -512,6 +512,14 @@ helm install todolist oci://ghcr.io/naqa92/charts/todolist --version 0.1.0
 helm search repo ghcr.io/naqa92/charts/todolist --versions
 ```
 
+#### **Utilisation Helm en local**
+
+```bash
+helm template ./charts/todolist # Render
+helm install todolist ./charts/todolist -n demo --create-namespace # Installation
+helm upgrade todolist ./charts/todolist -n demo # Mise à jour
+```
+
 ## Déploiement Kubernetes
 
 ### Déploiement Local avec Kind
@@ -531,14 +539,6 @@ DATABASE_URL="postgresql://..." task cluster-create
 ![Minimal deployment](images/minimal-deployment.png)
 
 > _Application accessible sur : todolist.127.0.0.1.nip.io (nip.io fonctionne en redirigeant 127.0.0.1.nip.io vers 127.0.0.1)_
-
-### Utilisation de la chart Helm todolist
-
-```bash
-helm template ./charts/todolist # Render
-helm install todolist ./charts/todolist -n demo --create-namespace # Installation
-helm upgrade todolist ./charts/todolist -n demo # Mise à jour
-```
 
 ## Sécurité
 

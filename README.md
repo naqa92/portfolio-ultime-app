@@ -13,6 +13,7 @@ L'application est conçue pour démontrer une architecture complète de dévelop
 ## Table des Matières
 
 - [Aperçu du Projet](#aperçu-du-projet)
+- [Pré-requis](#pré-requis)
 - [Architecture Technique](#architecture-technique)
 - [API Endpoints](#api-endpoints)
 - [Schéma de Base de Données](#schéma-de-base-de-données)
@@ -28,6 +29,8 @@ L'application est conçue pour démontrer une architecture complète de dévelop
 - [Licence](#licence)
 - [TODO](#todo)
 
+---
+
 ## Aperçu du Projet
 
 Cette application TodoList permet de :
@@ -39,6 +42,29 @@ Cette application TodoList permet de :
 - ✅ Persister les données en base de données
 
 ![Application TodoList](images/app.png)
+
+---
+
+## Pré-requis
+
+- Secrets/Variables d'environnement GitHub :
+
+| Type     | Nom                         | Description                                              |
+| -------- | --------------------------- | -------------------------------------------------------- |
+| Secret   | `NEON_API_KEY`              | Clé API Neon pour base de données éphémère (auto-généré) |
+| Secret   | `PRIVATE_REGISTRY_PASSWORD` | Token GitHub pour GHCR (repo + package permissions)      |
+| Secret   | `CONFIG_REPO_PAT`           | Token GitHub pour ArgoCD config repo (repo permissions)  |
+| Variable | `NEON_PROJECT_ID`           | ID du projet Neon (auto-généré)                          |
+
+- Token pour le repo infra : `ghcr-token` (read package permissions)
+
+### Configuration de NEON_API_KEY et NEON_PROJECT_ID
+
+L'accès à l'application GitHub est accordé exclusivement au dépôt "portfolio-ultime-app"
+
+> **Note** : [Documentation GitHub Action de Neon Database](https://github.com/neondatabase/create-branch-action)
+
+---
 
 ## Architecture Technique
 
@@ -97,6 +123,8 @@ portfolio-ultime-app/
   └── workflows/               # Workflows GitHub Actions CI/CD
 ```
 
+---
+
 ## API Endpoints
 
 L'application expose les endpoints suivants :
@@ -110,6 +138,8 @@ L'application expose les endpoints suivants :
 | `/health`      | GET     | Health check                         | JSON `{"status": "healthy"}` |
 
 > **Note** : Les méthodes GET et POST utilisent GET pour la compatibilité avec les formulaires HTML standards.
+
+---
 
 ## Schéma de Base de Données
 
@@ -129,6 +159,8 @@ CREATE TABLE todos (
 - `title` : Titre de la tâche (max 100 caractères, requis)
 - `complete` : Statut de completion (booléen, FALSE par défaut)
 
+---
+
 ## Dépendances
 
 ### Dépendances app (`app/requirements.txt`)
@@ -145,26 +177,9 @@ CREATE TABLE todos (
 - **pytest-cov** (6.0.0) : Couverture de code
 - **pytest-html** (4.1.1) : Rapports HTML de tests
 
+---
+
 ## Configuration
-
-### Pré-requis
-
-- Secrets/Variables d'environnement GitHub :
-
-| Type     | Nom                         | Description                                              |
-| -------- | --------------------------- | -------------------------------------------------------- |
-| Secret   | `NEON_API_KEY`              | Clé API Neon pour base de données éphémère (auto-généré) |
-| Secret   | `PRIVATE_REGISTRY_PASSWORD` | Token GitHub pour GHCR (repo + package permissions)      |
-| Secret   | `CONFIG_REPO_PAT`           | Token GitHub pour ArgoCD config repo (repo permissions)  |
-| Variable | `NEON_PROJECT_ID`           | ID du projet Neon (auto-généré)                          |
-
-- Token pour le repo infra : `ghcr-token` (read package permissions)
-
-#### Configuration de NEON_API_KEY et NEON_PROJECT_ID
-
-L'accès à l'application GitHub est accordé exclusivement au dépôt "portfolio-ultime-app"
-
-> **Note** : [Documentation GitHub Action de Neon Database](https://github.com/neondatabase/create-branch-action)
 
 ### Variables d'Environnement
 
@@ -182,6 +197,8 @@ L'accès à l'application GitHub est accordé exclusivement au dépôt "portfoli
 | --------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `initialDelaySeconds` | Attend 5 secondes avant de commencer à vérifier si le conteneur est prêt à recevoir du trafic.    | Attend 30 secondes avant de commencer à vérifier si le conteneur est en vie.                      |
 | `timeoutSeconds`      | La vérification doit se terminer en 5 secondes maximum, sinon elle est considérée comme un échec. | La vérification doit se terminer en 5 secondes maximum, sinon elle est considérée comme un échec. |
+
+---
 
 ## Démarrage Rapide
 
@@ -234,6 +251,8 @@ open coverage-html/index.html
 
 > _Pensez à nettoyer `.pytest_cache/` et `coverage-html/`_
 
+---
+
 ## Containerisation Docker
 
 Le `Dockerfile` utilise un build multi-stage pour optimiser la taille et la sécurité :
@@ -243,6 +262,8 @@ Le `Dockerfile` utilise un build multi-stage pour optimiser la taille et la séc
    - Utilisateur non-root pour la sécurité
    - Healthcheck intégré (pour que l’image s’auto-contrôle)
    - Optimisations de taille
+
+---
 
 ## Stratégie de Tests Multi-Niveaux
 
@@ -378,6 +399,8 @@ Run de l'image Docker pour vérifier le health status (via docker inspect) qui r
 
 > **Note** : [Documentation](https://docs.docker.com/build/ci/github-actions/test-before-push/)
 
+---
+
 ## Pipeline CI/CD
 
 ### GitHub Actions Workflow (`.github/workflows/ci.yaml`)
@@ -423,6 +446,8 @@ Résumé des étapes principales :
 - Commit, tag et push la release Git
 - Génère les notes de release automatiquement
 - Met à jour le repo de config ArgoCD (image/tag Helm)
+
+---
 
 ## Système de Versioning et Releases
 
@@ -520,6 +545,8 @@ helm install todolist ./charts/todolist -n demo --create-namespace # Installatio
 helm upgrade todolist ./charts/todolist -n demo # Mise à jour
 ```
 
+---
+
 ## Déploiement Kubernetes
 
 ### Déploiement Local avec Kind
@@ -540,6 +567,8 @@ DATABASE_URL="postgresql://..." task cluster-create
 
 > _Application accessible sur : todolist.127.0.0.1.nip.io (nip.io fonctionne en redirigeant 127.0.0.1.nip.io vers 127.0.0.1)_
 
+---
+
 ## Sécurité
 
 - **Utilisateur non-root** : L'image Docker utilise un utilisateur non-privilégié pour la sécurité
@@ -548,9 +577,13 @@ DATABASE_URL="postgresql://..." task cluster-create
 - **Validation des entrées** : Nettoyage des espaces dans les titres de tâches
 - **Sécurité des conteneurs** : Build multi-stage réduisant la surface d'attaque
 
+---
+
 ## Licence
 
 Ce projet est sous licence MIT
+
+---
 
 ## TODO
 

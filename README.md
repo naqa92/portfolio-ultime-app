@@ -212,8 +212,8 @@ CREATE TABLE todos (
 
 ```bash
 # Cloner le projet
-git clone https://github.com/naqa92/portfolio-ultime.git
-cd portfolio-ultime
+git clone https://github.com/naqa92/portfolio-ultime-app.git
+cd portfolio-ultime-app
 
 # Setup environnement Python
 python -m venv .venv
@@ -345,7 +345,7 @@ Report
 
 ![Regression test](images/regression-test.png)
 
-### 5. CodeSQL - SAST (`github/codeql-action/analyze@v3`)
+### 5. CodeQL - SAST (`github/codeql-action/analyze@v3`)
 
 CodeQL est le moteur d'analyse statique développé par GitHub qui excelle particulièrement dans l'écosystème GitHub Actions.
 

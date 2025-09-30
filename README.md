@@ -137,7 +137,7 @@ L'application expose les endpoints suivants :
 | `/delete/<id>` | GET     | Supprimer une tâche                  | Redirection                  |
 | `/health`      | GET     | Health check                         | JSON `{"status": "healthy"}` |
 
-> **Note** : Les méthodes GET et POST utilisent GET pour la compatibilité avec les formulaires HTML standards.
+> **Note** : Update et Delete utilisent GET pour la compatibilité avec les formulaires HTML standards. Il faut utiliser HTMX pour utiliser PUT et DELETE
 
 ---
 

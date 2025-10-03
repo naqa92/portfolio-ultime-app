@@ -317,25 +317,24 @@ jobs:
       - name: Setup yq
         uses: frenck/action-setup-yq@v1
 
-      - name: Update image tag and ArgoCD targetRevision
+      - name: Update image tag
         working-directory: portfolio-ultime-config
         env:
           VERSION: ${{ needs.version.outputs.new-version }}
         run: |
           yq eval -i '.image.tag = strenv(VERSION)' ./values/todolist-values.yaml
-          yq eval -i '.spec.sources[0].targetRevision = strenv(VERSION)' ./argocd-apps/todolist.yaml
 
-      - name: Commit and push ArgoCD manifest update
+      - name: Commit and push image tag
         working-directory: portfolio-ultime-config
         env:
           VERSION: ${{ needs.version.outputs.new-version }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add ./values/todolist-values.yaml ./argocd-apps/todolist.yaml
+          git add ./values/todolist-values.yaml
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: update todolist chart+image to $VERSION"
+            git commit -m "chore: update todolist image to $VERSION"
             git push origin main
           fi

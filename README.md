@@ -40,6 +40,7 @@ Cette application TodoList permet de :
 - ✅ Marquer les tâches comme terminées/non terminées
 - ✅ Supprimer des tâches
 - ✅ Persister les données en base de données
+- ✅ Interactions dynamiques sans rechargement de page
 
 ![Application TodoList](images/app.png)
 
@@ -70,7 +71,7 @@ L'accès à l'application GitHub est accordé exclusivement au dépôt "portfoli
 
 ### Stack Technologique
 
-- **Frontend** : HTML/CSS
+- **Frontend** : HTML/HTMX, CSS
 - **Backend** : Flask (Python 3.13)
 - **Base de données** : SQLite / PostgreSQL
 - **ORM** : SQLAlchemy (Flask-SQLAlchemy)
@@ -89,7 +90,8 @@ portfolio-ultime-app/
 │   ├── instance/
 │   │   └── todos.db             # Base SQLite locale (dev)
 │   └── templates/               # Fichiers HTML (Jinja2)
-│       └── base.html            # Template principal
+│       ├── base.html            # Template principal
+│       └── todo_list.html       # Template partiel (HTMX)
 ├── charts/                      # Chart Helm todolist pour déploiement Kubernetes
 │   └── todolist/
 │       ├── Chart.yaml           # Métadonnées Helm chart
@@ -132,12 +134,12 @@ L'application expose les endpoints suivants :
 | Endpoint       | Méthode | Description                          | Réponse                      |
 | -------------- | ------- | ------------------------------------ | ---------------------------- |
 | `/`            | GET     | Page d'accueil avec liste des tâches | HTML                         |
-| `/add`         | POST    | Ajouter une nouvelle tâche           | Redirection                  |
-| `/update/<id>` | GET     | Basculer l'état d'une tâche          | Redirection                  |
-| `/delete/<id>` | GET     | Supprimer une tâche                  | Redirection                  |
+| `/add`         | POST    | Ajouter une nouvelle tâche           | HTML partiel (HTMX)          |
+| `/update/<id>` | PUT     | Basculer l'état d'une tâche          | HTML partiel (HTMX)          |
+| `/delete/<id>` | DELETE  | Supprimer une tâche                  | HTML partiel (HTMX)          |
 | `/health`      | GET     | Health check                         | JSON `{"status": "healthy"}` |
 
-> **Note** : Update et Delete utilisent GET pour la compatibilité avec les formulaires HTML standards. Il faut utiliser HTMX pour utiliser PUT et DELETE
+> **Note** : L'application utilise **HTMX** pour les interactions dynamiques sans rechargement de page. Les endpoints `/add`, `/update`, et `/delete` retournent du HTML partiel qui met à jour uniquement la liste des todos.
 
 ---
 
@@ -576,6 +578,7 @@ DATABASE_URL="postgresql://..." task cluster-create
 - **Gestion des erreurs** : Rollback automatique des transactions DB en cas d'erreur
 - **Validation des entrées** : Nettoyage des espaces dans les titres de tâches
 - **Sécurité des conteneurs** : Build multi-stage réduisant la surface d'attaque
+- **Méthodes HTTP appropriées** : Utilisation de POST/PUT/DELETE via HTMX pour les opérations RESTful
 
 ---
 

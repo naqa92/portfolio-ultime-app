@@ -1,0 +1,28 @@
+{% for todo in todo_list %}
+<div class="ui segment" id="todo-{{ todo.id }}">
+  <p class="ui big header">{{ todo.id }} | {{ todo.title }}</p>
+
+  {% if todo.complete == False %}
+  <span class="ui gray label">Not Complete</span>
+  {% else %}
+  <span class="ui green label">Completed</span>
+  {% endif %}
+
+  <button
+    class="ui blue button"
+    hx-put="/update/{{ todo.id }}"
+    hx-target="#todo-list"
+    hx-swap="innerHTML"
+  >
+    Update
+  </button>
+  <button
+    class="ui red button"
+    hx-delete="/delete/{{ todo.id }}"
+    hx-target="#todo-list"
+    hx-swap="innerHTML"
+  >
+    Delete
+  </button>
+</div>
+{% endfor %}

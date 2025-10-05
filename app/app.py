@@ -5,10 +5,8 @@ from flask import (
     Flask,
     Response,
     jsonify,
-    redirect,
     render_template,
     request,
-    url_for,
 )
 from flask_sqlalchemy import SQLAlchemy
 
@@ -62,7 +60,7 @@ def home() -> str:
 
 
 @app.route("/add", methods=["POST"])
-def add() -> Response:
+def add() -> str:
     """Add a new todo item."""
     title = request.form.get("title", "").strip()  # Strip whitespace
     if title:
@@ -73,11 +71,13 @@ def add() -> Response:
         except Exception as e:
             app.logger.error("Error committing to DB: %s", e)
             db.session.rollback()
-    return redirect(url_for("home"))
+    
+    todo_list = Todo.query.all()
+    return render_template("todo_list.html", todo_list=todo_list)
 
 
-@app.route("/update/<int:todo_id>", methods=["GET"])
-def update(todo_id: int) -> Response:
+@app.route("/update/<int:todo_id>", methods=["PUT"])
+def update(todo_id: int) -> str:
     """Update a todo item's completion status."""
     todo = db.get_or_404(Todo, todo_id)
     todo.complete = not todo.complete
@@ -86,11 +86,13 @@ def update(todo_id: int) -> Response:
     except Exception as e:
         app.logger.error("Error committing to DB: %s", e)
         db.session.rollback()
-    return redirect(url_for("home"))
+    
+    todo_list = Todo.query.all()
+    return render_template("todo_list.html", todo_list=todo_list)
 
 
-@app.route("/delete/<int:todo_id>", methods=["GET"])
-def delete(todo_id: int) -> Response:
+@app.route("/delete/<int:todo_id>", methods=["DELETE"])
+def delete(todo_id: int) -> str:
     """Delete a todo item."""
     todo = db.get_or_404(Todo, todo_id)
     db.session.delete(todo)
@@ -99,7 +101,9 @@ def delete(todo_id: int) -> Response:
     except Exception as e:
         app.logger.error("Error committing to DB: %s", e)
         db.session.rollback()
-    return redirect(url_for("home"))
+    
+    todo_list = Todo.query.all()
+    return render_template("todo_list.html", todo_list=todo_list)
 
 
 # Run the app

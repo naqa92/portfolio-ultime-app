@@ -62,11 +62,11 @@ def test_todo_workflow_end_to_end(client: FlaskClient) -> None:
         todo_id = todo.id
         logger.info(f"Created todo with ID: {todo_id}")
 
-    # Update puis delete en chaîne
+    # Update puis delete en chaîne using proper HTTP methods
     logger.info(f"Updating todo {todo_id}")
-    client.get(f"/update/{todo_id}")
+    client.put(f"/update/{todo_id}")
     logger.info(f"Deleting todo {todo_id}")
-    client.get(f"/delete/{todo_id}")
+    client.delete(f"/delete/{todo_id}")
 
     # Vérifier que tout est nettoyé
     with client.application.app_context():

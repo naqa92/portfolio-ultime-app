@@ -25,7 +25,7 @@ def test_add_todo(client: FlaskClient) -> None:
     logger.info("Testing todo addition functionality")
     response = client.post("/add", data={"title": "Test Todo"})
     logger.info(f"Add todo POST request returned status: {response.status_code}")
-    assert response.status_code == 302  # Redirect after POST
+    assert response.status_code == 200  # HTMX returns HTML partial
 
     # Verify todo was added
     with client.application.app_context():
@@ -47,11 +47,11 @@ def test_update_todo(client: FlaskClient) -> None:
         todo_id = todo.id
         logger.info(f"Created test todo with ID: {todo_id}")
 
-    # Update the todo
+    # Update the todo using PUT method
     logger.info(f"Attempting to update todo {todo_id}")
-    response = client.get(f"/update/{todo_id}")
+    response = client.put(f"/update/{todo_id}")
     logger.info(f"Update request returned status: {response.status_code}")
-    assert response.status_code == 302
+    assert response.status_code == 200  # HTMX returns HTML partial
 
     # Verify todo was updated
     with client.application.app_context():
@@ -75,11 +75,11 @@ def test_delete_todo(client: FlaskClient) -> None:
         todo_id = todo.id
         logger.info(f"Created test todo with ID: {todo_id} for deletion test")
 
-    # Delete the todo
+    # Delete the todo using DELETE method
     logger.info(f"Attempting to delete todo {todo_id}")
-    response = client.get(f"/delete/{todo_id}")
+    response = client.delete(f"/delete/{todo_id}")
     logger.info(f"Delete request returned status: {response.status_code}")
-    assert response.status_code == 302
+    assert response.status_code == 200  # HTMX returns HTML partial
 
     # Verify todo was deleted
     with client.application.app_context():

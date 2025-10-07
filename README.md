@@ -195,13 +195,16 @@ Cette commande génère automatiquement un fichier de migration SQL dans le doss
 
 #### Appliquer les Migrations
 
-**Important** : Les migrations Atlas doivent être appliquées avant le démarrage de l'application.
+**Stratégie Hybride** :
+
+- **SQLite** (développement/test local) : L'application crée automatiquement les tables avec `db.create_all()` au démarrage
+- **PostgreSQL** : Les migrations Atlas doivent être appliquées avant le démarrage
 
 ```bash
-# Appliquer sur une base SQLite locale
-atlas migrate apply --env local --url "sqlite://instance/todos.db"
+# Pour SQLite local - automatique, rien à faire
+# Les tables sont créées automatiquement au démarrage de l'application
 
-# Appliquer sur PostgreSQL
+# Pour PostgreSQL - appliquer manuellement les migrations
 atlas migrate apply --env postgres --url "postgresql://user:pass@host:port/db"
 ```
 

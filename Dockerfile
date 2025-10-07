@@ -26,6 +26,7 @@ COPY --from=builder /install /usr/local
 
 # Copy application code
 COPY app/app.py ./
+COPY app/models/ ./models/
 COPY app/templates/ ./templates/
 
 # Change ownership of the app directory

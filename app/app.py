@@ -21,16 +21,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Initialize the database with the app
 db.init_app(app)
 
-# Create database tables for SQLite (development/testing)
-# For production with PostgreSQL, migrations are managed by Atlas
-with app.app_context():
-    db_uri = app.config["SQLALCHEMY_DATABASE_URI"]
-    if db_uri.startswith("sqlite://"):
-        db.create_all()
-        app.logger.info("SQLite database initialized with db.create_all()")
-    else:
-        app.logger.info("PostgreSQL database - schema managed by Atlas migrations")
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

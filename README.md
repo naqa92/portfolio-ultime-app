@@ -195,16 +195,13 @@ Cette commande génère automatiquement un fichier de migration SQL dans le doss
 
 #### Appliquer les Migrations
 
-**Stratégie Hybride** :
-
-- **SQLite** (développement/test local) : L'application crée automatiquement les tables avec `db.create_all()` au démarrage
-- **PostgreSQL** : Les migrations Atlas doivent être appliquées avant le démarrage
+**Important** : Les migrations Atlas doivent être appliquées avant le démarrage de l'application.
 
 ```bash
-# Pour SQLite local - automatique, rien à faire
-# Les tables sont créées automatiquement au démarrage de l'application
+# Appliquer sur une base SQLite locale
+atlas migrate apply --env local --url "sqlite://instance/todos.db"
 
-# Pour PostgreSQL - appliquer manuellement les migrations
+# Appliquer sur PostgreSQL
 atlas migrate apply --env postgres --url "postgresql://user:pass@host:port/db"
 ```
 
@@ -241,6 +238,7 @@ L'application utilise l'[Atlas Kubernetes Operator](https://atlasgo.io/integrati
 #### Tests et CI/CD
 
 - **Tests unitaires/régression** : Utilisent SQLite en mémoire avec `db.create_all()` (rapide et isolé)
+- **Smoke test Docker** : Les migrations Atlas sont appliquées sur une base SQLite locale, puis montée en volume read-only dans le conteneur
 - **Tests d'intégration** : Les migrations Atlas sont appliquées par le script `run-integration-tests.sh` avant l'exécution de pytest
 - **Déploiement K8s** : L'Atlas Operator applique automatiquement le schéma de manière déclarative
 

@@ -47,10 +47,8 @@ tasks:
   install-atlas-operator:
     desc: Installe l'Atlas Operator pour gérer les migrations de base de données
     cmds:
-      - |
-        helm upgrade --install atlas-operator \
-          oci://ghcr.io/ariga/charts/atlas-operator \
-          --namespace atlas-operator --create-namespace --wait
+      - helm install atlas-operator oci://ghcr.io/ariga/charts/atlas-operator -n atlas-operator --create-namespace
+      - kubectl -n atlas-operator wait --for=condition=Available deployment/atlas-operator
     internal: true
 
   deploy-app:
@@ -63,6 +61,7 @@ tasks:
           --from-literal=password="${DATABASE_PASSWORD}" \
           --from-literal=uri="${DATABASE_URL}"
       - kubectl -n demo apply -f ./kubernetes/AtlasSchema.yaml
+      - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=atlas-dev-db --timeout=120s
       - helm upgrade --install todolist ./charts/todolist -n demo --set image.tag="${IMAGE_TAG}" --set image.pullPolicy=Never # use local image
       - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=todolist --timeout=120s
       - curl -sf http://todolist.127.0.0.1.nip.io/ || (echo "L'accès à todolist.127.0.0.1.nip.io a échoué" && exit 1)

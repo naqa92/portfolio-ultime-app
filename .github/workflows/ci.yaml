@@ -137,6 +137,9 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@v1.12.1 # Non-community version pas dispo via Nixpkgs
+
       - name: Smoke Test
         run: devbox run --config devbox-ci.json smoke-test
         env:

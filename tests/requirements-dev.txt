@@ -6,3 +6,4 @@ pytest-cov==6.0.0
 pytest-html==4.1.1
 psycopg2-binary==2.9.10
 python-dotenv==1.0.1
+atlas-provider-sqlalchemy==0.4.0

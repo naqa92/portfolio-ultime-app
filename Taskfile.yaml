@@ -23,7 +23,6 @@ tasks:
     cmds:
       - kubectl wait --for=condition=Ready nodes --all --timeout=120s
       - kubectl wait --for=condition=Ready pods -n kube-system -l k8s-app=kube-dns --timeout=120s
-      - sleep 5
     internal: true
 
   load-docker-image:
@@ -61,9 +60,19 @@ tasks:
           --from-literal=password="${DATABASE_PASSWORD}" \
           --from-literal=uri="${DATABASE_URL}"
       - kubectl -n demo apply -f ./kubernetes/AtlasSchema.yaml
-      - sleep 5
       - kubectl -n demo wait --for=condition=Ready atlasschema/todos --timeout=120s
       - helm upgrade --install todolist ./charts/todolist -n demo --set image.tag="${IMAGE_TAG}" --set image.pullPolicy=Never # use local image
       - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=todolist --timeout=120s
-      - curl -sf http://todolist.127.0.0.1.nip.io/ || (echo "L'accès à todolist.127.0.0.1.nip.io a échoué" && exit 1)
+      - echo "Attente de la configuration de l'ingress..."
+      - |
+        for i in {1..30}; do
+          if curl -sf http://todolist.127.0.0.1.nip.io/ > /dev/null 2>&1; then
+            echo "✓ Application accessible via l'ingress"
+            exit 0
+          fi
+          echo "Tentative $i/30 - En attente de l'ingress..."
+          sleep 2
+        done
+        echo "L'accès à todolist.127.0.0.1.nip.io a échoué après 30 tentatives"
+        exit 1
     internal: true

@@ -327,7 +327,7 @@ cd tests && python -m pytest units.py --cov=../app --cov-report=html
 
 # Tests d'intégration (nécessite DATABASE_URL)
 export DATABASE_URL="postgresql://..."
-cd tests && atlas migrate apply --env postgres --url "$DATABASE_URL" && python -m pytest integration.py -v
+cd tests && atlas schema apply --env postgres --url "$DATABASE_URL" --auto-approve && python -m pytest integration.py -v
 
 # Tests de régression
 cd tests && python -m pytest regression.py -v

@@ -32,8 +32,8 @@ echo "Activating virtual environment..."
 echo "Installing test dependencies..."
 pip install -r tests/requirements-dev.txt
 
-echo "Applying Atlas migrations to database..."
-atlas migrate apply --env postgres --url "$DATABASE_URL"
+echo "Applying database schema from SQLAlchemy models..."
+atlas schema apply --env postgres --url "$DATABASE_URL" --auto-approve
 
 echo "Running integration tests..."
 cd tests && python -m pytest integration.py -v --tb=short --html=../integration-test-report.html --self-contained-html

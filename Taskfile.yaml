@@ -61,7 +61,8 @@ tasks:
           --from-literal=password="${DATABASE_PASSWORD}" \
           --from-literal=uri="${DATABASE_URL}"
       - kubectl -n demo apply -f ./kubernetes/AtlasSchema.yaml
-      - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=atlas-dev-db --timeout=120s
+      - sleep 5
+      - kubectl -n demo wait --for=condition=Ready atlasschema/todos --timeout=120s
       - helm upgrade --install todolist ./charts/todolist -n demo --set image.tag="${IMAGE_TAG}" --set image.pullPolicy=Never # use local image
       - kubectl -n demo wait --for=condition=Ready pod -l app.kubernetes.io/name=todolist --timeout=120s
       - curl -sf http://todolist.127.0.0.1.nip.io/ || (echo "L'accès à todolist.127.0.0.1.nip.io a échoué" && exit 1)

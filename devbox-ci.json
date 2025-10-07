@@ -3,6 +3,7 @@
     "kind@0.29.0",
     "kubectl@1.33.3",
     "kubernetes-helm@3.18.4",
+    "atlas@0.35.0",
     "go-task@latest"
   ],
   "shell": {

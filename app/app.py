@@ -8,7 +8,8 @@ from flask import (
     render_template,
     request,
 )
-from flask_sqlalchemy import SQLAlchemy
+
+from models.models import db, Todo
 
 # Create Flask app
 app = Flask(__name__)
@@ -16,27 +17,9 @@ app = Flask(__name__)
 # Configure SQLAlchemy
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///todos.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
 
-
-# Define Todo model
-class Todo(db.Model):
-    """Todo model for storing todo items."""
-
-    __tablename__ = "todos"
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    complete = db.Column(db.Boolean, default=False, nullable=False)
-
-    def __repr__(self) -> str:
-        """String representation of Todo object."""
-        return f"<Todo {self.id}: {self.title}>"
-
-
-# Create database tables
-with app.app_context():
-    db.create_all()
+# Initialize the database with the app
+db.init_app(app)
 
 # Configure logging
 logging.basicConfig(

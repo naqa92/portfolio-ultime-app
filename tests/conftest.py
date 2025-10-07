@@ -42,7 +42,7 @@ def db(app):
     """Create database for the tests."""
     _db.app = app
 
-    # Create all tables
+    # Create all tables (For integration tests with PostgreSQL, migrations are applied by the shell script)
     _db.create_all()
 
     yield _db

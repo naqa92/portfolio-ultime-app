@@ -6,6 +6,7 @@ L'application est conçue pour démontrer une architecture complète de dévelop
 
 - **Containerisation** avec Docker
 - **Base de données externe**
+- **Migrations de schéma** avec Atlas
 - **Pipeline CI/CD** automatisée
 - **Tests multi-niveaux**
 - **Déploiement Kubernetes** minimal
@@ -87,8 +88,8 @@ portfolio-ultime-app/
 │   ├── __init__.py              # Initialisation du package
 │   ├── app.py                   # Point d'entrée principal
 │   ├── requirements.txt         # Dépendances Python (app)
-│   ├── instance/
-│   │   └── todos.db             # Base SQLite locale (dev)
+│   ├── models/
+│   │   └── models.py            # Modèles SQLAlchemy (Todo)
 │   └── templates/               # Fichiers HTML (Jinja2)
 │       ├── base.html            # Template principal
 │       └── todo_list.html       # Template partiel (HTMX)
@@ -101,6 +102,9 @@ portfolio-ultime-app/
 │           ├── ingress.yaml     # Ingress K8s
 │           └── service.yaml     # Service K8s
 ├── images/                      # Images illustratives (pour README)
+├── instance/                    # Base SQLite locale (dev)
+├── kubernetes/                  # Manifests pour le déploiement minimal
+├── migrations/                  # Migrations Atlas (gérées automatiquement)
 ├── scripts/                     # Scripts pour CI et tests
 │   ├── run-integration-tests.sh
 │   ├── run-regression-tests.sh
@@ -112,8 +116,8 @@ portfolio-ultime-app/
 │   ├── regression.py            # Tests de non-régression
 │   ├── requirements-dev.txt     # Dépendances de test
 │   └── units.py                 # Tests unitaires
+├── atlas.hcl                    # Configuration Atlas pour migrations
 ├── Dockerfile                   # Build multi-stage Docker
-├── kind.yaml                    # Config cluster Kind (dev K8s)
 ├── pyproject.toml               # Config Python/Ruff
 ├── pytest.ini                   # Config pytest
 ├── README.md                    # Documentation principale
@@ -161,6 +165,84 @@ CREATE TABLE todos (
 - `title` : Titre de la tâche (max 100 caractères, requis)
 - `complete` : Statut de completion (booléen, FALSE par défaut)
 
+### Gestion des Migrations avec Atlas
+
+L'application utilise [Atlas](https://atlasgo.io/) pour gérer les migrations de base de données de manière déclarative à partir des modèles SQLAlchemy.
+
+#### Configuration
+
+Le fichier `atlas.hcl` définit deux environnements :
+
+- **`local`** : Pour développement avec SQLite
+- **`postgres`** : Pour production avec PostgreSQL
+
+#### Générer une Migration
+
+Après avoir modifié les modèles dans `app/models/models.py` :
+
+```bash
+# Pour SQLite (développement)
+atlas migrate diff --env local
+
+# Pour PostgreSQL (production)
+atlas migrate diff --env postgres
+```
+
+Cette commande génère automatiquement un fichier de migration SQL dans le dossier `migrations/`.
+
+- Migration files are named with timestamps (e.g., `20240101120000.sql`)
+- `atlas.sum` contains checksums for integrity validation
+
+#### Appliquer les Migrations
+
+**Important** : Les migrations Atlas doivent être appliquées avant le démarrage de l'application.
+
+```bash
+# Appliquer sur une base SQLite locale
+atlas migrate apply --env local --url "sqlite://instance/todos.db"
+
+# Appliquer sur PostgreSQL
+atlas migrate apply --env postgres --url "postgresql://user:pass@host:port/db"
+```
+
+#### Inspecter le Schéma
+
+```bash
+# Inspecter la base de données actuelle
+atlas schema inspect --env local --url "sqlite://instance/todos.db"
+```
+
+#### Workflow Typique
+
+1. **Modifier les modèles** dans `app/models/models.py`
+2. **Générer la migration** : `atlas migrate diff --env local`
+3. **Vérifier le fichier** de migration généré dans `migrations/`
+4. **Appliquer la migration** : `atlas migrate apply --env local --url "sqlite://instance/todos.db"`
+5. **Commit** le fichier de migration dans Git
+
+#### Intégration avec Kubernetes
+
+L'application utilise l'[Atlas Kubernetes Operator](https://atlasgo.io/integrations/kubernetes) pour automatiser l'application du schéma lors des déploiements.
+
+**Déploiement** : L'operator Atlas est installé automatiquement lors du déploiement Kubernetes via le `Taskfile.yaml`
+
+**Configuration : `kubernetes/AtlasSchema.yaml`**
+
+**Avantages** :
+
+- ✅ Migrations automatiques au déploiement
+- ✅ Gestion déclarative du schéma
+- ✅ Synchronisation garantie entre modèles et base de données
+- ✅ Rollback simplifié en cas de problème
+
+#### Tests et CI/CD
+
+- **Tests unitaires/régression** : Utilisent SQLite en mémoire avec `db.create_all()` (rapide et isolé)
+- **Tests d'intégration** : Les migrations Atlas sont appliquées par le script `run-integration-tests.sh` avant l'exécution de pytest
+- **Déploiement K8s** : L'Atlas Operator applique automatiquement le schéma de manière déclarative
+
+> **Note** : Voir la [documentation officielle](https://atlasgo.io/guides/orms/sqlalchemy/getting-started) pour plus de détails.
+
 ---
 
 ## Dépendances
@@ -171,6 +253,7 @@ CREATE TABLE todos (
 - **Flask-SQLAlchemy** (3.1.1) : Extension SQLAlchemy pour Flask
 - **psycopg2-binary** (2.9.10) : Driver PostgreSQL
 - **Gunicorn** (23.0.0) : WSGI pour lancer l’application (via Dockerfile)
+- **atlas-provider-sqlalchemy** (0.4.0) : Provider Atlas pour SQLAlchemy
 
 ### Dépendances tests (`tests/requirements-dev.txt`)
 
@@ -207,8 +290,7 @@ CREATE TABLE todos (
 ### Prérequis
 
 - Python 3.13+
-- Docker
-- kubectl + kind pour Kubernetes
+- Atlas CLI (pour les migrations de base de données)
 
 ### Développement Local
 
@@ -221,6 +303,9 @@ cd portfolio-ultime-app
 python -m venv .venv
 source .venv/bin/activate
 pip install -r app/requirements.txt
+
+# Appliquer les migrations de base de données
+atlas migrate apply --env local --url "sqlite://instance/todos.db"
 
 # Lancer l'application
 cd app
@@ -241,7 +326,7 @@ cd tests && python -m pytest units.py --cov=../app --cov-report=html
 
 # Tests d'intégration (nécessite DATABASE_URL)
 export DATABASE_URL="postgresql://..."
-cd tests && python -m pytest integration.py -v
+cd tests && atlas migrate apply --env postgres --url "$DATABASE_URL" && python -m pytest integration.py -v
 
 # Tests de régression
 cd tests && python -m pytest regression.py -v
@@ -606,6 +691,5 @@ on:
 
 - Passer à Snyk avec auto-génération de PR
 - Validation des données côté serveur plus stricte - Flask-WTF
-- Gestion des migrations - Atlas
 - Rate limiting - Protection contre les abus
 - Monitoring - Métriques Prometheus/OpenTelemetry

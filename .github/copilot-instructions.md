@@ -2,6 +2,13 @@
 
 ## Build/Lint/Test Commands
 
+Always source .venv and use devbox run before running commands.
+
+```bash
+source .venv/bin/activate
+devbox run <command>
+```
+
 ### Linting
 
 ```bash

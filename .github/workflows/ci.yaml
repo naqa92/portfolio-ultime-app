@@ -164,6 +164,8 @@ jobs:
         run: devbox run --config devbox-ci.json minimal-deployment
         env:
           DATABASE_URL: ${{ steps.create-database.outputs.db_url }}
+          DATABASE_HOST: ${{ steps.create-database.outputs.db_host }}
+          DATABASE_PASSWORD: ${{ steps.create-database.outputs.password }}
           IMAGE_TAG: ${{ needs.version.outputs.new-version || 'latest' }}
 
       - name: Run integration tests

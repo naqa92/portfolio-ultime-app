@@ -203,15 +203,7 @@ atlas migrate apply --env postgres --url "$DATABASE_URL"
 
 ![Atlas-migrate](images/atlas-migrate.png)
 
-**Important** : Pour NeonDB, il faut spécifier le schéma `public` dans l'URL.
-
-**Exemple avec NeonDB :**
-
-```bash
-export DATABASE_URL="postgresql://user:password@host/db?sslmode=require"
-ATLAS_URL="${DATABASE_URL}&search_path=public"
-atlas migrate apply --env postgres --url "$ATLAS_URL"
-```
+**Important** : Pour NeonDB, il faut spécifier le schéma `public` dans l'URL (voir la partie Développement Local)
 
 #### Inspecter le Schéma
 
@@ -323,7 +315,7 @@ python app.py
 open http://localhost:5000
 ```
 
-> **Note** : En développement local, l'application utilise SQLite (`instance/todos.db`) créé automatiquement au premier lancement via `db.create_all()`. Aucune migration Atlas n'est nécessaire pour le développement local.
+> **Note** : En local, l'application utilise SQLite (`instance/todos.db`), créé automatiquement au premier lancement via `db.create_all()`.
 
 ### Tests de Développement
 
@@ -337,9 +329,11 @@ cd tests && python -m pytest units.py --cov=../app --cov-report=html
 # Tests de régression (SQLite en mémoire)
 cd tests && python -m pytest regression.py -v
 
-# Tests d'intégration (nécessite NeonDB)
-export DATABASE_URL="postgresql://user:password@host/db?sslmode=require"
-./scripts/run-integration-tests.sh
+# Tests d'intégration (NeonDB URL avec search_path=public)
+export DATABASE_URL="postgresql://user:password@host/db?sslmode=require&search_path=public"
+atlas migrate diff --env postgres
+atlas migrate apply --env postgres --url "$DATABASE_URL"
+cd tests && python -m pytest integration.py -v --tb=short --html=../integration-test-report.html --self-contained-html
 
 # Rapport HTML des tests
 open units-test-report.html

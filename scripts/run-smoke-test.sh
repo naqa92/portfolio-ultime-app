@@ -6,6 +6,7 @@ TIMEOUT=30
 
 # Start container
 echo "Starting container..."
+docker run -d --rm --name "$NAME" -p 5005:5000 "$IMAGE"
 
 # Wait for health check
 echo "Waiting for container to be healthy..."

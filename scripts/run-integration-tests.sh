@@ -21,6 +21,7 @@ if [[ ! "$DATABASE_URL" =~ postgresql:// ]] && [[ ! "$DATABASE_URL" =~ postgres:
 	exit 1
 fi
 
+# Schéma déjà créé par Atlas Operator via K8s
 echo "Using database URL: ${DATABASE_URL}"
 
 echo "Creating Python virtual environment..."
@@ -31,14 +32,6 @@ echo "Activating virtual environment..."
 
 echo "Installing test dependencies..."
 pip install -r tests/requirements-dev.txt
-
-ATLAS_URL="${DATABASE_URL}&search_path=public" # Atlas requires schema to be specified in the URL for NeonDB
-
-echo "Checking if migrations are up to date with SQLAlchemy models..."
-atlas migrate diff --env postgres
-
-echo "Applying database migrations to Neon..."
-atlas migrate apply --env postgres --url "$ATLAS_URL" --allow-dirty # Permet d'utiliser la table "todos" déjà créée par K8S
 
 echo "Running integration tests..."
 cd tests && python -m pytest integration.py -v --tb=short --html=../integration-test-report.html --self-contained-html

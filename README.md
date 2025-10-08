@@ -247,8 +247,10 @@ L'application utilise l'[Atlas Kubernetes Operator](https://atlasgo.io/integrati
 #### Tests et CI/CD
 
 - **Tests unitaires/régression** : Utilisent SQLite en mémoire avec `db.create_all()` (rapide, isolé, pas de migrations nécessaires)
-- **Tests d'intégration** : Utilisent NeonDB avec migrations Atlas automatique (voir `run-integration-tests.sh`)
 - **Déploiement K8s** : L'Atlas Operator applique automatiquement le schéma de manière déclarative
+- **Tests d'intégration** : Utilisent NeonDB
+  - local : Faire la migration manuellement avant de lancer les tests
+  - CI : Schéma déjà créé par Atlas Operator via K8s
 
 > **Note** : Voir la [documentation officielle](https://atlasgo.io/guides/orms/sqlalchemy/getting-started) pour plus de détails.
 

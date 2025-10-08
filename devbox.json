@@ -1,6 +1,5 @@
 {
   "packages": [
-    "atlas@0.35.0",
     "act@0.2.79"
   ],
   "shell": {

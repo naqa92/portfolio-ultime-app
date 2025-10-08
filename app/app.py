@@ -21,6 +21,11 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Initialize the database with the app
 db.init_app(app)
 
+# Create tables if they don't exist (SQLite only - PostgreSQL uses Atlas migrations)
+if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite"):
+    with app.app_context():
+        db.create_all()
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

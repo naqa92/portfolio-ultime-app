@@ -32,8 +32,13 @@ echo "Activating virtual environment..."
 echo "Installing test dependencies..."
 pip install -r tests/requirements-dev.txt
 
-echo "Applying database schema from SQLAlchemy models..."
-atlas schema apply --env postgres --url "$DATABASE_URL" --auto-approve
+ATLAS_URL="${DATABASE_URL}&search_path=public" # Atlas requires schema to be specified in the URL for NeonDB
+
+echo "Checking if migrations are up to date with SQLAlchemy models..."
+atlas migrate diff --env postgres
+
+echo "Applying database migrations to Neon..."
+atlas migrate apply --env postgres --url "$ATLAS_URL"
 
 echo "Running integration tests..."
 cd tests && python -m pytest integration.py -v --tb=short --html=../integration-test-report.html --self-contained-html

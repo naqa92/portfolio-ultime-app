@@ -8,32 +8,11 @@ data "external_schema" "sqlalchemy" {
   program = [
     "atlas-provider-sqlalchemy",
     "--path", "./app/models",
-    "--dialect", "sqlite" # Can be changed to "postgresql" for production
+    "--dialect", "postgresql"
   ]
 }
 
-# Define environments for different use cases
-env "local" {
-  # Use SQLAlchemy models as the source of truth
-  src = data.external_schema.sqlalchemy.url
-  
-  # Development database (ephemeral SQLite container for schema validation)
-  dev = "sqlite://dev?mode=memory"
-  
-  # Migration files directory
-  migration {
-    dir = "file://migrations"
-  }
-  
-  # Format for migration files (with proper indentation)
-  format {
-    migrate {
-      diff = "{{ sql . \"  \" }}"
-    }
-  }
-}
-
-# Environment for PostgreSQL (production-like)
+# PostgreSQL environment
 env "postgres" {
   # Use SQLAlchemy models as the source of truth
   src = data.external_schema.sqlalchemy.url

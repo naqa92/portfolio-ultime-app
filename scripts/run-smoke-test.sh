@@ -4,19 +4,8 @@ set -e # Exit on any error
 # Configuration
 TIMEOUT=30
 
-# Prepare database with migrations
-echo "Preparing database for smoke test..."
-rm -f instance/smoke_test.db # Clean up any existing test database
-atlas migrate apply --env local --url "sqlite://instance/smoke_test.db"
-echo "✓ Database migrations applied"
-
-# Start container with volume mount for the database
+# Start container
 echo "Starting container..."
-docker run -d --rm --name "$NAME" \
-  -p 5005:5000 \
-  -v "$(pwd)/instance/smoke_test.db:/app/instance/todos.db:ro" \
-  -e DATABASE_URL="sqlite:///instance/todos.db" \
-  "$IMAGE"
 
 # Wait for health check
 echo "Waiting for container to be healthy..."
@@ -42,7 +31,5 @@ while true; do
 done
 
 # Cleanup
-echo "Cleaning up..."
 docker rm -f "$NAME" || true
-rm -f instance/smoke_test.db # Clean up test database
 echo "✓ Smoke test passed"

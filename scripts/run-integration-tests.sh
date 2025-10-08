@@ -38,7 +38,7 @@ echo "Checking if migrations are up to date with SQLAlchemy models..."
 atlas migrate diff --env postgres
 
 echo "Applying database migrations to Neon..."
-atlas migrate apply --env postgres --url "$ATLAS_URL"
+atlas migrate apply --env postgres --url "$ATLAS_URL" --allow-dirty # Permet d'utiliser la table "todos" déjà créée par K8S
 
 echo "Running integration tests..."
 cd tests && python -m pytest integration.py -v --tb=short --html=../integration-test-report.html --self-contained-html

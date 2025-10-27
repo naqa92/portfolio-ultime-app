@@ -72,7 +72,7 @@ L'accès à l'application GitHub est accordé exclusivement au dépôt "portfoli
 
 ### Stack Technologique
 
-- **Frontend** : HTML/HTMX, CSS
+- **Frontend** : HTMX, Tailwind CSS v4, Alpine.js
 - **Backend** : Flask (Python 3.13)
 - **Base de données** : SQLite / PostgreSQL
 - **ORM** : SQLAlchemy (Flask-SQLAlchemy)
@@ -90,6 +90,10 @@ portfolio-ultime-app/
 │   ├── requirements.txt         # Dépendances Python (app)
 │   ├── models/
 │   │   └── models.py            # Modèles SQLAlchemy (Todo)
+│   ├── static/                  # Fichiers statiques
+│   │   └── css/
+│   │       ├── input.css        # Source Tailwind CSS
+│   │       └── style.css        # CSS compilé (généré)
 │   └── templates/               # Fichiers HTML (Jinja2)
 │       ├── base.html            # Template principal
 │       └── todo_list.html       # Template partiel (HTMX)
@@ -315,7 +319,10 @@ python app.py
 open http://localhost:5000
 ```
 
-> **Note** : En local, l'application utilise SQLite (`instance/todos.db`), créé automatiquement au premier lancement via `db.create_all()`.
+> **Note** :
+>
+> - En local, l'application utilise SQLite (`instance/todos.db`), créé automatiquement au premier lancement via `db.create_all()`.
+> - Tailwind CSS CLI est installé via `devbox.json` pour la compilation des styles.
 
 ### Tests de Développement
 

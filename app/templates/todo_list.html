@@ -1,28 +1,34 @@
 {% for todo in todo_list %}
-<div class="ui segment" id="todo-{{ todo.id }}">
-  <p class="ui big header">{{ todo.id }} | {{ todo.title }}</p>
+<div class="bg-surface-alt border border-outline p-6 rounded-radius shadow-sm" id="todo-{{ todo.id }}">
+  <div class="flex justify-between items-start gap-4 flex-wrap">
+    <div class="flex-1 min-w-0">
+      <p class="text-xl font-semibold text-on-surface-strong mb-2">{{ todo.id }} | {{ todo.title }}</p>
 
-  {% if todo.complete == False %}
-  <span class="ui gray label">Not Complete</span>
-  {% else %}
-  <span class="ui green label">Completed</span>
-  {% endif %}
+      {% if todo.complete == False %}
+      <span class="inline-block bg-warning text-on-warning px-3 py-1 rounded-radius text-sm">Non complété</span>
+      {% else %}
+      <span class="inline-block bg-success text-on-success px-3 py-1 rounded-radius text-sm">Complété</span>
+      {% endif %}
+    </div>
 
-  <button
-    class="ui blue button"
-    hx-put="/update/{{ todo.id }}"
-    hx-target="#todo-list"
-    hx-swap="innerHTML"
-  >
-    Update
-  </button>
-  <button
-    class="ui red button"
-    hx-delete="/delete/{{ todo.id }}"
-    hx-target="#todo-list"
-    hx-swap="innerHTML"
-  >
-    Delete
-  </button>
+    <div class="flex gap-2">
+      <button
+        class="bg-primary text-on-primary px-4 py-2 rounded-radius hover:opacity-90 transition-opacity cursor-pointer"
+        hx-put="/update/{{ todo.id }}"
+        hx-target="#todo-list"
+        hx-swap="innerHTML"
+      >
+        Mettre à jour
+      </button>
+      <button
+        class="bg-danger text-on-danger px-4 py-2 rounded-radius hover:opacity-90 transition-opacity cursor-pointer"
+        hx-delete="/delete/{{ todo.id }}"
+        hx-target="#todo-list"
+        hx-swap="innerHTML"
+      >
+        Supprimer
+      </button>
+    </div>
+  </div>
 </div>
 {% endfor %}

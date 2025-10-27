@@ -1,6 +1,6 @@
 {
   "packages": [
-    "act@0.2.79"
+    "tailwindcss_4@4.1.11"
   ],
   "shell": {
     "init_hook": [],

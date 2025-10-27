@@ -1,73 +1,104 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr"
+  x-data="{ darkMode: localStorage.getItem('darkMode') === 'enabled' || (localStorage.getItem('darkMode') === null && window.matchMedia('(prefers-color-scheme: dark)').matches) }"
+  :class="{ 'dark': darkMode }">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Todo App</title>
 
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js"></script>
   </head>
 
-  <body>
-    <div style="margin-top: 50px" class="ui container">
-      <h1 class="ui center aligned header">To Do App</h1>
-
-      <form
-        class="ui form"
-        hx-post="/add"
-        hx-target="#todo-list"
-        hx-swap="innerHTML"
-      >
-        <div class="field">
-          <label for="title">Todo Title</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            placeholder="Enter Todo..."
-            required
-          />
+  <body class="bg-surface text-on-surface min-h-screen transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8">
+      <header class="mb-8 flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-on-surface-strong">To Do App</h1>
+          <p class="text-on-surface mt-2">Gérez vos tâches facilement</p>
         </div>
-        <button class="ui blue button" type="submit">Add</button>
-      </form>
 
-      <hr />
+        <!-- Bouton de basculement du mode sombre -->
+        <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode ? 'enabled' : 'disabled')"
+          class="bg-primary text-on-primary px-4 py-2 rounded-radius flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer">
+          <span x-text="darkMode ? '☀️' : '🌙'">🌙</span>
+          <span x-text="darkMode ? 'Mode clair' : 'Mode sombre'">Mode sombre</span>
+        </button>
+      </header>
 
-      <div id="todo-list">
-        {% for todo in todo_list %}
-        <div class="ui segment" id="todo-{{ todo.id }}">
-          <p class="ui big header">{{ todo.id }} | {{ todo.title }}</p>
-
-          {% if todo.complete == False %}
-          <span class="ui gray label">Not Complete</span>
-          {% else %}
-          <span class="ui green label">Completed</span>
-          {% endif %}
-
-          <button
-            class="ui blue button"
-            hx-put="/update/{{ todo.id }}"
+      <main>
+        <!-- Formulaire d'ajout de tâches -->
+        <div class="bg-surface-alt p-6 rounded-radius shadow-md mb-8">
+          <form
+            hx-post="/add"
             hx-target="#todo-list"
             hx-swap="innerHTML"
+            class="space-y-4"
           >
-            Update
-          </button>
-          <button
-            class="ui red button"
-            hx-delete="/delete/{{ todo.id }}"
-            hx-target="#todo-list"
-            hx-swap="innerHTML"
-          >
-            Delete
-          </button>
+            <div>
+              <label for="title" class="block text-on-surface-strong font-medium mb-2">Nouvelle tâche</label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                placeholder="Entrez votre tâche..."
+                required
+                class="w-full px-4 py-2 bg-surface border border-outline rounded-radius text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <button class="bg-primary text-on-primary px-6 py-2 rounded-radius hover:opacity-90 transition-opacity cursor-pointer" type="submit">
+              Ajouter
+            </button>
+          </form>
         </div>
-        {% endfor %}
-      </div>
+
+        <!-- Liste des tâches -->
+        <div id="todo-list" class="space-y-4">
+          {% for todo in todo_list %}
+          <div class="bg-surface-alt border border-outline p-6 rounded-radius shadow-sm" id="todo-{{ todo.id }}">
+            <div class="flex justify-between items-start gap-4 flex-wrap">
+              <div class="flex-1 min-w-0">
+                <p class="text-xl font-semibold text-on-surface-strong mb-2">{{ todo.id }} | {{ todo.title }}</p>
+
+                {% if todo.complete == False %}
+                <span class="inline-block bg-warning text-on-warning px-3 py-1 rounded-radius text-sm">Non complété</span>
+                {% else %}
+                <span class="inline-block bg-success text-on-success px-3 py-1 rounded-radius text-sm">Complété</span>
+                {% endif %}
+              </div>
+
+              <div class="flex gap-2">
+                <button
+                  class="bg-primary text-on-primary px-4 py-2 rounded-radius hover:opacity-90 transition-opacity cursor-pointer"
+                  hx-put="/update/{{ todo.id }}"
+                  hx-target="#todo-list"
+                  hx-swap="innerHTML"
+                >
+                  Mettre à jour
+                </button>
+                <button
+                  class="bg-danger text-on-danger px-4 py-2 rounded-radius hover:opacity-90 transition-opacity cursor-pointer"
+                  hx-delete="/delete/{{ todo.id }}"
+                  hx-target="#todo-list"
+                  hx-swap="innerHTML"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </main>
+
+      <footer class="mt-12 pt-6 border-t border-outline text-center">
+        <p class="text-on-surface">Application Todo avec HTMX, Tailwind CSS et Alpine.js</p>
+      </footer>
     </div>
   </body>
 </html>

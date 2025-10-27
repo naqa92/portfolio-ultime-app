@@ -21,13 +21,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl=8.14.1-2 &
 # Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Copy Python packages from builder stage
+# Copy Python packages and application code
 COPY --from=builder /install /usr/local
-
-# Copy application code
-COPY app/app.py ./
-COPY app/models/ ./models/
-COPY app/templates/ ./templates/
+COPY app/ ./
 
 # Change ownership of the app directory
 RUN chown -R appuser:appuser /app

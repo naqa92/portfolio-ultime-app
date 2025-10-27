@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom Palette */
+  --color-dark-charcoal: #222831;
+  --color-dark-slate: #393E46;
+  --color-bright-blue: #0077B6;
+  --color-light-gray: #EEEEEE;
+
+  /* Light Theme */
+  --color-surface: var(--color-light-gray);
+  --color-surface-alt: #F5F5F5;
+  --color-on-surface: var(--color-dark-slate);
+  --color-on-surface-strong: var(--color-dark-charcoal);
+  --color-primary: var(--color-bright-blue);
+  --color-on-primary: var(--color-light-gray);
+  --color-secondary: var(--color-dark-charcoal);
+  --color-on-secondary: var(--color-light-gray);
+  --color-outline: var(--color-dark-slate);
+  --color-outline-strong: var(--color-dark-charcoal);
+
+  /* Dark Theme */
+  --color-surface-dark: var(--color-dark-charcoal);
+  --color-surface-dark-alt: var(--color-dark-slate);
+  --color-on-surface-dark: var(--color-light-gray);
+  --color-on-surface-dark-strong: #FFFFFF;
+  --color-primary-dark: var(--color-bright-blue);
+  --color-on-primary-dark: var(--color-dark-charcoal);
+  --color-secondary-dark: var(--color-light-gray);
+  --color-on-secondary-dark: var(--color-dark-charcoal);
+  --color-outline-dark: var(--color-dark-slate);
+  --color-outline-dark-strong: var(--color-light-gray);
+
+  /* Shared Colors */
+  --color-info: #0077B6;
+  --color-on-info: var(--color-light-gray);
+  --color-success: #27AE60;
+  --color-on-success: var(--color-light-gray);
+  --color-warning: #F39C12;
+  --color-on-warning: var(--color-dark-charcoal);
+  --color-danger: #E74C3C;
+  --color-on-danger: var(--color-light-gray);
+
+  /* Border Radius */
+  --radius-radius: var(--radius-sm);
+
+  /* Fonts */
+  --font-poppins: 'Poppins', sans-serif;
+}
+
+/* Mode sombre automatique basé sur la classe .dark */
+html.dark {
+  /* Remplacer les variables de couleur du thème clair par celles du thème sombre */
+  --color-surface: var(--color-surface-dark);
+  --color-surface-alt: var(--color-surface-dark-alt);
+  --color-on-surface: var(--color-on-surface-dark);
+  --color-on-surface-strong: var(--color-on-surface-dark-strong);
+  --color-primary: var(--color-primary-dark);
+  --color-on-primary: var(--color-on-primary-dark);
+  --color-secondary: var(--color-secondary-dark);
+  --color-on-secondary: var(--color-on-secondary-dark);
+  --color-outline: var(--color-outline-dark);
+  --color-outline-strong: var(--color-outline-dark-strong);
+}
+
+/* Application globale de la police Poppins */
+body {
+  font-family: var(--font-poppins);
+}
+

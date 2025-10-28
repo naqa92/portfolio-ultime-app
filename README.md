@@ -687,20 +687,5 @@ Ce projet est sous licence MIT
 ## TODO
 
 - Branch Protection : Blocage des push directs sur main (Review PR nécessaire)
-
-  > _Update ArgoCD manifest : Modifier aussi le push direct par une PR_
-
-```yaml
-on:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - closed # à séparer via pr-close.yaml
-```
-
 - Passer à Snyk avec auto-génération de PR
-- Validation des données côté serveur plus stricte - Flask-WTF
-- Rate limiting - Protection contre les abus
 - Monitoring - Métriques Prometheus/OpenTelemetry

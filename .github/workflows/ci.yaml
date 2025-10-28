@@ -329,17 +329,35 @@ jobs:
         run: |
           yq eval -i '.image.tag = strenv(VERSION)' ./values/todolist-values.yaml
 
-      - name: Commit and push image tag
+      - name: Create PR for image tag update
         working-directory: portfolio-ultime-config
         env:
           VERSION: ${{ needs.version.outputs.new-version }}
+          GH_TOKEN: ${{ secrets.CONFIG_REPO_PAT }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+
+          # Create release branch
+          git switch --create release/todolist-$VERSION
+
+          # Commit changes
           git add ./values/todolist-values.yaml
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
             git commit -m "chore: update todolist image to $VERSION"
-            git push origin main
+            git push origin release/todolist-$VERSION
+            
+            # Create PR for review
+            gh pr create \
+              --title "chore: update todolist image to $VERSION" \
+              --body "New release: \`$VERSION\`
+
+          ArgoCD Diff Preview will show the exact changes to your manifests.
+
+          Please review before merging to trigger the deployment." \
+              --base main \
+              --head release/todolist-$VERSION \
+              --repo naqa92/portfolio-ultime-config
           fi
